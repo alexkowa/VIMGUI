@@ -1,0 +1,40 @@
+\HeaderA{initialise}{Initialization of missing values}{initialise}
+\keyword{manip}{initialise}
+%
+\begin{Description}\relax
+Rough estimation of missing values in a vector according to its type.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+initialise(x)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] a vector.
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+Missing values are imputed with the mean for vectors of class 
+\code{"numeric"}, with the median for vectors of class \code{"integer"}, 
+and with the mode for vectors of class \code{"factor"}.  Hence, \code{x} 
+should be prepared in the following way: assign class \code{"numeric"} 
+to numeric vectors, assign class \code{"integer"} to ordinal  vectors, 
+and assign class \code{"factor"} to nominal or binary  vectors. 
+\end{Details}
+%
+\begin{Value}
+the initialized vector.
+\end{Value}
+%
+\begin{Note}\relax
+  
+The function is used internally by some imputation algorithms.
+\end{Note}
+%
+\begin{Author}\relax
+Matthias Templ, modifications by Andreas Alfons
+\end{Author}

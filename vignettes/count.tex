@@ -1,0 +1,40 @@
+\HeaderA{count}{Count number of infinite or missing values}{count}
+\aliasA{countInf}{count}{countInf}
+\aliasA{countNA}{count}{countNA}
+\keyword{utilities}{count}
+%
+\begin{Description}\relax
+Count the number of infinite or missing values in a vector.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+countInf(x)
+
+countNA(x)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] a vector.
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{countInf} returns the number of infinite values in \code{x}.
+
+\code{countNA} returns the number of missing values in \code{x}.
+\end{Value}
+%
+\begin{Author}\relax
+Andreas Alfons
+\end{Author}
+%
+\begin{Examples}
+\begin{ExampleCode}
+data(sleep, package="VIM")
+countInf(log(sleep$Dream))
+countNA(sleep$Dream)
+\end{ExampleCode}
+\end{Examples}

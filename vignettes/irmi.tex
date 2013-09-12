@@ -1,0 +1,101 @@
+\HeaderA{irmi}{Iterative robust model-based imputation (IRMI) }{irmi}
+\keyword{manip}{irmi}
+%
+\begin{Description}\relax
+In each step of the iteration,
+one variable is used as a response variable and the remaining variables
+serve as the regressors.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+irmi(x, eps = 5, maxit = 100, mixed = NULL, count = NULL, step = FALSE, 
+    robust = FALSE, takeAll = TRUE, noise = TRUE, noise.factor = 1,
+    force = FALSE, robMethod = "MM", force.mixed = TRUE, mi = 1,
+    addMixedFactors = FALSE, trace = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] 
+data.frame or matrix
+
+\item[\code{eps}] 
+threshold for convergency
+
+\item[\code{maxit}] 
+maximum number of iterations
+
+\item[\code{mixed}] 
+column index of the semi-continuous variables
+
+\item[\code{count}] 
+column index of count variables
+
+
+\item[\code{step}] 
+a stepwise model selection is applied when the parameter is set to TRUE
+
+\item[\code{robust}] 
+if TRUE, robust regression methods will be applied
+
+\item[\code{takeAll}] 
+takes information of (initialised) missings in the response as well for regression imputation.
+
+\item[\code{noise}] 
+irmi has the option to add a random error term to the imputed values, this
+creates the possibility for multiple imputation. The error term has mean 0 and
+variance corresponding to the variance of the
+regression residuals.
+
+\item[\code{noise.factor}] 
+amount of noise.
+
+\item[\code{force}] 
+if TRUE, the algorithm tries to find a solution in any case, possible by using different robust methods automatically.
+
+\item[\code{robMethod}] 
+regression method when the response is continuous.
+
+\item[\code{force.mixed}] 
+if TRUE, the algorithm tries to find a solution in any case, possible by using different robust methods automatically.
+
+\item[\code{addMixedFactors
+}] 
+if factor variables for the mixed variables should be created for the regression models
+
+\item[\code{mi}] 
+number of multiple imputations.
+
+\item[\code{trace}] 
+Additional information about the iterations when trace equals TRUE.
+
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+The method works sequentially and iterative. The method can deal with a mixture of continuous, semi-continuous, ordinal and nominal variables including 
+outliers. 
+
+A full description of the method will be uploaded soon in form of a package vignette.
+\end{Details}
+%
+\begin{Value}
+the imputed data set.
+\end{Value}
+%
+\begin{Author}\relax
+Matthias Templ, Alexander Kowarik
+\end{Author}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{mi}{mi}}
+\end{SeeAlso}
+%
+\begin{Examples}
+\begin{ExampleCode}
+data(sleep)
+irmi(sleep)
+\end{ExampleCode}
+\end{Examples}

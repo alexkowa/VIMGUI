@@ -1,0 +1,46 @@
+\HeaderA{summary.aggr}{Summary method for objects of class aggr}{summary.aggr}
+\keyword{print}{summary.aggr}
+%
+\begin{Description}\relax
+Summary method for objects of class \code{"aggr"}.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S3 method for class 'aggr'
+summary(object, ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{object}] an object of class \code{"aggr"}.
+\item[\code{...}] further arguments.
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+a list of class \code{"summary.aggr"} containing the following components:
+\begin{ldescription}
+\item[\code{missings}] a \code{data.frame} containing the amount of missing or imputed values 
+in each variable.
+\item[\code{combinations}] a \code{data.frame} containing a character vector 
+representing the combinations of variables along with their frequencies 
+and percentages.
+\end{ldescription}
+\end{Value}
+%
+\begin{Author}\relax
+Matthias Templ, modifications by Andreas Alfons
+\end{Author}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{print.summary.aggr}{print.summary.aggr}}, \code{\LinkA{aggr}{aggr}}
+\end{SeeAlso}
+%
+\begin{Examples}
+\begin{ExampleCode}
+data(sleep, package = "VIM")
+summary(aggr(sleep, plot=FALSE))
+\end{ExampleCode}
+\end{Examples}

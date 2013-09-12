@@ -1,0 +1,79 @@
+\HeaderA{colSequence}{HCL and RGB color sequences}{colSequence}
+\aliasA{colSequenceHCL}{colSequence}{colSequenceHCL}
+\aliasA{colSequenceRGB}{colSequence}{colSequenceRGB}
+\keyword{color}{colSequence}
+%
+\begin{Description}\relax
+Compute color sequences by linear interpolation based on a continuous color 
+scheme between certain start and end colors.  Color sequences may thereby be 
+computed in the \emph{HCL} or \emph{RGB} color space.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+colSequence(p, start, end, space = c("hcl", "rgb"), ...)
+
+colSequenceHCL(p, start, end, gamma = 2.2, fixup = TRUE, ...)
+
+colSequenceRGB(p, start, end, gamma = 2.2, fixup = TRUE, ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{p}] a numeric vector in \eqn{$[0,1]$}{} giving values to be used 
+for interpolation between the start and end color (0 corresponds to the 
+start color, 1 to the end color).
+\item[\code{start, end}] the start and end color, respectively.  For HCL colors, 
+each can be supplied as a vector of length three (hue, chroma, luminance) 
+or an object of class "\code{\LinkA{polarLUV}{polarLUV}}".  For 
+RGB colors, each can be supplied as a character string, a vector of length 
+three (red, green, blue) or an object of class 
+"\code{\LinkA{RGB}{RGB}}".
+\item[\code{space}] character string; if \code{start} and \code{end} are both 
+numeric, this determines whether they refer to HCL or RGB values.  Possible 
+values are \code{"hcl"} (for the HCL space) or \code{"rgb"} (for the RGB 
+space).
+\item[\code{gamma}] numeric; the display \emph{gamma} value (see 
+\code{\LinkA{hex}{hex}}).
+\item[\code{fixup}] a logical indicating whether the colors should be corrected to 
+valid RGB values (see \code{\LinkA{hex}{hex}}).
+\item[\code{...}] for \code{colSequence}, additional arguments to be passed to 
+\code{colSequenceHCL} or \code{colSequenceRGB}.  For \code{colSequenceHCL} 
+and \code{colSequenceRGB}, additional arguments to be passed to 
+\code{\LinkA{hex}{hex}}.
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+A character vector containing hexadecimal strings of the form 
+\code{"\#RRGGBB"}.
+\end{Value}
+%
+\begin{Author}\relax
+Andreas Alfons
+\end{Author}
+%
+\begin{References}\relax
+Zeileis, A., Hornik, K., Murrell, P. (2009) Escaping RGBland: Selecting 
+colors for statistical graphics. \emph{Computational Statistics \& Data 
+Analysis}, \bold{53 (9)}, 1259--1270.
+\end{References}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{hex}{hex}}, \code{\LinkA{sequential\_hcl}{sequential.Rul.hcl}}
+\end{SeeAlso}
+%
+\begin{Examples}
+\begin{ExampleCode}
+p <- c(0, 0.3, 0.55, 0.8, 1)
+
+## HCL colors
+colSequence(p, c(0, 0, 100), c(0, 100, 50))
+colSequence(p, polarLUV(L=90, C=30, H=90), c(0, 100, 50))
+
+## RGB colors
+colSequence(p, c(1, 1, 1), c(1, 0, 0), space="rgb")
+colSequence(p, RGB(1, 1, 0), "red")
+\end{ExampleCode}
+\end{Examples}

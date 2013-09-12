@@ -1,0 +1,2060 @@
+%\VignetteIndexEntry{Visualization of imputed values with VIM}
+\documentclass[a4paper]{scrartcl}
+\usepackage{Rd}
+\usepackage{Sweave}
+\let\code=\texttt
+\let\proglang=\textsf\let\code=\texttt
+\let\proglang=\textsf\let\code=\texttt
+\let\proglang=\textsf
+\renewcommand{\pkg}[1]{{\normalfont\fontseries{b}\selectfont #1}}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[british]{babel}
+\usepackage{a4}
+\usepackage{amssymb,ae}
+\usepackage[intlimits,sumlimits]{amsmath}
+\usepackage{color,xcolor,boxedminipage}
+\usepackage{hhline}
+\usepackage{multirow}
+\usepackage{latexsym,listings,float}
+\usepackage{natbib}
+\usepackage{pgf}
+\usepackage{url}
+\usepackage{pifont} 
+\usepackage{pdfpages}
+\usepackage[lofdepth,lotdepth]{subfig}
+\usepackage{graphicx}
+
+
+\usepackage[a4paper,left=30mm,right=20mm,top=20mm, bottom=20mm]{geometry}
+
+\definecolor{darkred}{rgb}{0.545,0,0} 
+\definecolor{midnightblue}{rgb}{0.098,0.098,0.439} 
+
+\usepackage[pdftex]{hyperref}
+\hypersetup{ 
+    colorlinks, 
+    citecolor=blue,
+    linkcolor=blue,  
+    urlcolor=blue
+} 
+
+\begin{document}
+
+\title{Visualization of imputed values using the \proglang{R}-package \pkg{VIM}}
+\author{Bernd Prantner}
+\date{October, 2011}
+
+\maketitle
+
+\vspace{0.5 cm}
+
+\abstract{ \noindent
+The package \pkg{VIM} (visualization and imputation of missing values)
+\citep{VIM} is developed to explore and analyze the structure of missing or
+imputed values in data using graphical methods. Getting knowledge about the
+structure is helpful to identify the mechanism, which is generating the
+missings, respectively errors, which may have happened in the imputation
+process. Furthermore, it is also necessary for selecting an appropriate
+imputation method in order to reliably estimate the missing values. Package
+\pkg{VIM} offers different built-in imputation methods to impute the missing
+values. Moreover, it can also be used to produce high-quality graphics for
+publications. A simple graphical user interface allows an easy handling
+of the included methods.
+\\\\
+This paper describes the appliance of the package \pkg{VIM} and the included
+methods to produce graphics for imputed data. It can be seen as addition to
+\citet{Templ12} and the vignette of the package \pkg{VIM} \citep{VIMVign},
+which are focused on the visualization of missing values. At first, the
+graphical user interface and the differences of the built-in imputation
+methods are explained. Also the concept, how the package \pkg{VIM}
+distinguishes imputed and normal values, is illustrated. Afterwards, a detailed
+description of each graphical method and example plots are given. Additionally,
+important customizable parameters are noted and explained. In order to
+reproduce all plots, only the example data sets from package \pkg{VIM} are
+used and the \proglang{R}-commands are supplied.}
+
+\newpage
+\tableofcontents
+
+\newpage
+\listoffigures
+
+\newpage
+
+
+\section{Description of the graphical user interface of \pkg{VIM}}
+After the package \pkg{VIM} is loaded, it can be used in two different ways, by
+directly using the \proglang{R} console, or by taking advantage of the
+developed graphical user interface (GUI).
+
+<<load_VIM, results=hide, eval=FALSE>>=
+library(VIM)
+@
+
+\noindent The \proglang{R} package \pkg{tcltk} \citep{RDev} has been used to
+develop the GUI. A GUI is helpful for inexperienced users and for users who
+aren't familiar with the package \pkg{VIM}. It allows easy handling of the
+included functions. The GUI can be loaded with the following command:
+
+<<load_VIM_GUI, results=hide, eval=FALSE>>=
+vmGUImenu()	
+@
+
+\noindent If the GUI has been closed and is reopened during a session, all
+selections and settings will be recovered. \citep{VIMVign}
+Figure~\ref{Picture1} shows the initial GUI.
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{Picture1.png}
+\caption{The \pkg{VIM} GUI and it's menu for importing data}
+\label{Picture1}
+\end{center}
+\end{figure}
+
+\noindent Since this paper is focused on the imputation process, the important
+menus are the \emph{Data}, the \emph{Imputation}, the \emph{Diagnostics} and
+the \emph{Options} menu.
+
+\subsection{Data menu and data handling}
+In the \emph{Data} menu, one can select a data frame from the \proglang{R}
+workspace (see Figure~\ref{Picture2}). Three data sets are provided by the
+package \pkg{VIM}, \emph{chorizonDL} \citep{Reimann08}, \emph{sleep}
+\citep{Allison76} and \emph{tao} (derived from the GGOBI project
+\citep{Swayne03}).
+
+Alternatively, a data set in \code{.RData} format can be loaded from the file
+system into the \proglang{R} workspace and into the GUI.
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{Picture2.png}
+\caption{The dialog for data selection.}
+\label{Picture2}
+\end{center}
+\end{figure}
+
+\subsubsection{Selecting variables}
+After a data set has been chosen, or loaded, it's variables are shown in the
+\emph{Select Variables} and \emph{Highlight Variables in Plots} dialog
+(see Figure~\ref{Picture3}). With the distinction of plot and highlight
+variables, one can plot a certain variable and highlight values which are 
+missing or imputed values in other variables.
+
+If more than one variable is chosen for highlighting, it is possible to select
+whether observations with missing, respectively imputed values in any or in all of these
+variables should be highlighted in the \emph{Selection for Highlighting} dialog
+(see the lower right frame in Figure~\ref{Picture3}).
+\\\\
+An important feature is that the variables will be used in the same order as
+they were selected, which is especially useful for parallel coordinate plots.
+\citep{VIMVign}
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{Picture3.png}
+\caption{Variable selection with the \pkg{VIM} GUI.}
+\label{Picture3}
+\end{center}
+\end{figure}
+
+\subsection{Imputation menu}
+In the \emph{Imputation} menu one can choose between the built-in methods for
+the imputation of missing values (see Figure~\ref{Picture4}). Currently, the
+implemented methods are:
+\begin{itemize}
+	\item k-Nearest Neighbor imputation
+	\item Hotdeck imputation
+	\item IRMI (iterative robust model-based imputation), see \citep{Templ11}
+\end{itemize}
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{Picture4.png}
+\caption{Built-in imputation methods in the \pkg{VIM} GUI.}
+\label{Picture4}
+\end{center}
+\end{figure} 
+
+\noindent However, the built-in methods are especially adapted for the package
+\pkg{VIM}. Unlike different imputation methods, which simply impute the
+variables of choice, an additional variable for each imputed variable is added
+to the data set. Each created variable is related to an imputed variable and
+represents a logical vector indicating which values of the variable have been
+imputed. To distinguish all imputed variables from the index variables, and to
+connect a particular index variable to an imputed variable at the same time,
+the name of the index variable is composed of the name of the imputed variable
+and a given suffix defined by the \emph{delimiter}-Parameter in the
+\emph{Options menu} (see section~\ref{sec:Options} on page
+\pageref{sec:Options}).
+
+For example, let the name of the variable that should be imputed be
+\textbf{net\_income} and the delimiter is set to \textbf{\_imp} , the resulting
+index variable would be \textbf{net\_income\_imp}.
+\\\\
+Please be aware that the delimiter must be unique in the names of the variables
+in the data set. The indices are needed for the graphical methods to determine
+the imputed values that should be highlighted.
+\\\\ 
+NOTE: \emph{The indices variables are NOT shown in the GUI, since this is no
+gain in information for the users. Instead, they are automatically added to the
+data set for the graphical methods that belongs to the \emph{Diagnostics} menu.}
+
+\emph{Be sure that these variables are included in the data set, which is 
+passed over to the graphical methods for imputed values, as well as the
+delimiter of these variables, when using the package \pkg{VIM} with the
+\proglang{R} console.}
+
+\subsection{Diagnostics menu}
+\subsubsection{Difference between visualization and diagnostics menu}
+The GUI comes with two menus for the graphical methods of the package
+\pkg{VIM}, the \emph{Visualization} and the \emph{Diagnostics} menu. The first
+one is intended to analyze the structure of missing values with graphical
+methods \emph{before} the imputation process, whereas the \emph{Diagnostics}
+menu is designed to analyze the outcome \emph{after} the imputation process.
+Both menus have an identical structure of their commands, but the graphical
+methods behave differently.
+\\\\
+To understand the difference, the internal processing of the commands is
+explained:
+\\\\
+Every command for graphical methods has the same basic functionality. As long
+as the delimiter is set to \code{NULL} \emph{(which is the default value)}, the
+graphical methods of the \emph{Visualization} menu are applied, which means
+methods to analyze the structure of missing values are executed.
+
+Otherwise, the given data set is searched for variable names matching the given
+delimiter. They are considered to be index variables for imputed variables.
+If such variables are found, the graphical methods of the \emph{Diagnostics}
+menu are applied.
+\\\\
+For the users' convenience and to help users unfamiliar with the package
+\pkg{VIM}, if a delimiter is given, but no matching variable names are found,
+the data set is considered to may have missing values instead and hence the
+graphical methods of the \emph{Visualization} menu are applied and a warning is
+printed in the \proglang{R} console.
+\\\\
+Only if any graphical method of the \emph{Diagnostics} menu is selected, the
+index variables, as well as the delimiter, to distinguish between variables
+with and without imputed values, is added to the data set, which is then passed
+over to the chosen graphical method.
+
+Consequently, if any graphical method of the \emph{Visualization} menu is
+selected for already imputed data, no values are highlighted, since the data
+set is searched for non-existent missing values. However, if a method is
+selected via the \emph{Diagnostics} menu, but no indices variables are found
+with the given delimiter, the program automatically executes the suiting
+graphical method of the \emph{Visualization} menu.
+
+\subsubsection{Selecting of the plot methods}
+Another feature of the \pkg{VIM} GUI is, that only applicable plot methods
+are selectable, depending on the selected variables in the
+\emph{Select Variables} dialog. That means, if only one variable is selected,
+only the univariate plot methods are selectable (see Figure~\ref{Picture5}).
+Likewise if two variables are chosen in the dialog, only the bivariate
+graphical methods are applicable.
+
+The graphical Method ``Aggregate Missings and imputed Missings'' is excluded
+from this restraint, since it's applicable to all dimension of data, it's
+always selectable.
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{Picture5.png}
+\caption{Applicable univariate graphical methods in the diagnostics menu,
+based on the selection of one variable}
+\label{Picture5}
+\end{center}
+\end{figure} 
+
+\subsection{Options menu}\label{sec:Options}
+Figure~\ref{Picture6} shows the \emph{Options} menu, which is used for the 
+adjustment of the global settings of the package \pkg{VIM}.
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.5\textwidth]{Picture6.png}
+\caption{The Options menu}
+\label{Picture6}
+\end{center}
+\end{figure} 
+
+\begin{itemize}
+	\item In the top frame one can alter the colors used in the graphical
+methods.
+	\item The frame beneath that is intended to set the transparency of the
+	colors. This can be used to prevent overplotting.
+	\item The third frame is an option to embed multivariate plots in
+	\code{Tcl/Tk} windows.
+	\item Last, but not least, the fourth frame contains the delimiter. This is
+	a suffix, to identify the indexes for imputed variables. It is also used
+	by the imputation methods, which append this suffix to the name of the
+	created indices during the process.
+\end{itemize}
+
+\section{Plot methods}
+In the following, example data sets from package \pkg{VIM} are used to explain
+the diagnostics methods. Since the data comes with the package, the reader can
+reproduce all plots in this paper easily.
+\\\\
+Additionally, the mean imputation method of the \proglang{R} package
+\pkg{e1071} \citep{e1071} is used. This method isn't implemented in the package
+\pkg{VIM}, but it serves for comparison with the implemented methods in this
+paper. It uses the (column-wise) average value of the observed values for the
+imputation of missing values. This means, the missing values of the first
+column are estimated with the mean of the observed values of the first
+variable. Although it's a very fast and popular imputation method, it's not
+recommended to use it in practice, because it doesn't preserve the relationship
+among variables.
+\\\\
+The default color-scheme for all graphical methods is \textbf{blue}
+for observed values, \textbf{red} for missing values and \textbf{orange} for
+imputed values.
+
+If not mentioned otherwise, the used data set for the plot methods are already
+imputed completely. Subsequently, the \proglang{R}-commands for the used
+imputation methods are given:
+
+<<imp_data_sets, results=hide, eval=FALSE>>=
+sleep_kNN  <- kNN( sleep, k = 5)
+tao_kNN <- kNN(tao, k = 5)
+chorizon_kNN  <- kNN( chorizonDL ,variable=c("Ca","As","Bi"), dist_var=c("Hg","K","La","Li"), k=5)
+@
+
+\section{Aggregate missings and imputed missings}\label{sec:Aggregation}
+First of all, it may be of help to get an overview of the data set, e.g. of the
+number of missing values or the number of missing values which have been
+imputed, may be of interest. It may be even more interesting to analyze if
+there are certain combinations of variables with missing or imputed values.
+
+This can be reviewed easily by selecting the variables of interest and by
+clicking on \texttt{Diagnostics $\rightarrow$ Aggregate Missings and imputed
+missings}. Figure~\ref{fig:aggr_sleep_imp_part} shows the aggregation plot of
+the data set \emph{sleep}, in which the variables \emph{Sleep, Dream and NonD}
+have been imputed.
+\\\\
+If the command line of  \proglang{R} is preferred, the same plot can be created
+with following commands:
+
+<<Aggr_sleep_imp_part, results=hide, eval=FALSE>>=
+sleep_kNN_part <- kNN(sleep, variable=c("Sleep","Dream","NonD"), dist_var=colnames(sleep), k=5)
+aggr(sleep_kNN_part, delimiter="_imp", numbers=TRUE, prop=c(TRUE,FALSE))
+@
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{fig-aggr-sleep_imp_part.pdf}
+\caption{Aggregation graphic of the partially imputed data set \emph{sleep}}
+\label{fig:aggr_sleep_imp_part}
+\end{center}
+\end{figure} 
+
+\noindent As indicated before, variables containing missings and variables with
+imputed values can be combined in the aggregation graphic.
+
+In this particular plot, one can immediately see the three imputed variables,
+which are colored \textbf{orange}. The variables \emph{Span} and \emph{Gest}
+contain missing values, but haven't been imputed yet, thereby they are colored
+in \textbf{red}.
+\\\\
+Subsequently the different plot regions of Figure~\ref{fig:aggr_sleep_imp_part}
+are explained:
+\\\\\\
+\underline{Left plot region}\\
+A barplot with the proportion of missing or imputed values in each variable.
+\\\\
+This example graphic shows, that the variables \emph{NonD} and \emph{Dream} are
+having the highest amount of imputed or missing values, while the amount is
+rather small in the other three variables.
+\\\\
+\underline{Right plot region}\\
+An aggregation plot, showing all existing  combinations of missing (red),
+imputed (orange) and observed (blue) values. Additionally, the frequencies of
+different combinations are visualized by a small barplot and by the number of
+their occurrence on the right side.
+\\\\
+For example, this plot reveals, that if values in the variable \emph{NonD} are
+missing, they are mostly also missing in the variable \emph{Dream}, except for
+two times. It also shows, that the variable \emph{Sleep} only has missing,
+which are also missing in the variable \emph{NonD}.
+\\\\
+Obviously, this plot method is identical for every imputation method, since it
+only displays which values of the variable are missing or imputed values.
+
+\subsection{Customizing the graphic}
+When using the command line of  \proglang{R}, the graphic can be customized.
+Subsequently, an example code of customized aggregation plots is given and some
+of the adjustable parameters are explained:
+
+<<Aggr_sleep_custom, results=hide, eval=FALSE>>=
+aggr(sleep_kNN_part, delimiter="_imp", sortVars=TRUE, numbers=TRUE, prop=c(FALSE, FALSE), only.miss=FALSE)
+aggr(sleep_kNN_part, delimiter="_imp", sortVars=TRUE, numbers=TRUE, prop=c(FALSE, FALSE), only.miss=TRUE)
+aggr(sleep_kNN_part, delimiter="_imp", combined=TRUE, sortVars=FALSE, sortCombs=TRUE, numbers=TRUE, prop=c(FALSE, FALSE), only.miss=TRUE)
+@
+
+\begin{figure}[ht!]
+\centering
+\subfloat[Aggregation graphic with sorted variables and combinations]{
+	\includegraphics[width=0.46\textwidth]{fig-aggr-sleep_sort_onlymissfalse.pdf}
+	\label{fig:aggr_sleep_sort_onlymissfalse}}
+\hspace{2mm}
+\subfloat[Aggregation graphic showing only combinations with missing or imputed values in the right barplot]{
+    \includegraphics[width=0.46\textwidth]{fig-aggr-sleep_sort_onlymisstrue.pdf}
+    \label{fig:aggr_sleep_sort_onlymisstrue}}
+    \qquad
+\subfloat[Combined aggregation graphic]{
+	\includegraphics[width=0.5\textwidth]{fig-aggr-sleep_combined.pdf}
+    \label{fig:aggr_sleep_combined}}
+\caption{Customized aggregation plots of the partially imputed data set \emph{sleep}}
+\label{fig:aggr_customized}
+\end{figure}
+
+\noindent \underline{\emph{sortVars}}\\
+When \emph{sortVars} is set to \code{TRUE} the variables in the left barplot
+are sorted, according to their number of missing, respectively imputed values.
+\\\\
+\underline{\emph{sortCombs}}\\
+\emph{sortCombs} is the equivalent of \emph{sortVars} for the aggregation plot
+on the right side of the plot. If set, the combinations are sorted by the
+frequency of their occurrence. By default, it's already set to \code{TRUE}.
+\\\\
+Figure~\ref{fig:aggr_sleep_sort_onlymissfalse} shows an aggregation plot with
+both parameters set to \code{TRUE}.
+\\\\
+\underline{\emph{only.miss}}\\
+If set to \code{TRUE}, the barplot on the right side of the plot region is only
+drawn for combinations including missing or imputed values. This is helpful if
+most observation are complete and therefore the corresponding bar would
+dominate the barplot and the remaining bars would be too compressed.
+
+Figure~\ref{fig:aggr_sleep_sort_onlymisstrue} is a plot with this parameter set
+to \code{TRUE}. One can clearly see the difference to the barplot in
+Figure~\ref{fig:aggr_sleep_sort_onlymissfalse}.
+\\\\
+\underline{\emph{combined}}\\
+In figure~\ref{fig:aggr_sleep_combined} the two plot regions of the aggregation
+graphic are combined. The barplot with the proportion of missing or imputed
+values in each variable, which was on the left side of the plot, is now
+displayed on top of the graphic.
+
+
+\section{Histogram and barplot with imputed missings}\label{sec:Histogram}
+Both methods are adaptations of the familiar graphics. If more than one
+variable is supplied, the bins for the variable of interest will be split
+according to the imputed values in the additional variables. Imputed values
+in the variable of interest are visualized with a barplot on the right side of
+the plot, which is separated by a small gap. This bar is also split if more
+than one variable is supplied.
+\\\\
+A histogram is produced if the variable of interest is of type
+\textbf{numerical}. Otherwise, if it's of type \textbf{categorial}, a barplot
+is drawn.
+
+\emph{Note that the type of the variable of interest is automatically checked
+and a suitable graphical method is then executed by the program. However, for
+user's convenience, the GUI still specifies different options for both methods.
+If the wrong method for the variable of interest is selected, the appropriate
+one is executed anyhow.}
+\\\\
+Both graphics are intended to visually analyze the distribution and the
+proportion of observed and imputed values of the variable of interest, to
+discover outliers and to detect possible bi- or multivariate dependencies.
+
+They can be produced by first selecting the variable of interest in the
+\emph{Select Variables} dialog and the variable(s), which should be used for
+highlighting, in the \emph{Highlight Variables in Plots} dialog. After
+choosing, whether imputed values in \emph{any} or \emph{all} of the additional
+variables should be highlighted in the \emph{Selection for Highlighting}
+dialog, the graphic is displayed by clicking on \texttt{Diagnostics
+$\rightarrow$ Histogram with imputed missings} or \texttt{Diagnostics
+$\rightarrow$ Barplot with imputed missings} respectively.
+\\\\
+Figure~\ref{fig:hist_tao} shows a histogram of the variable \emph{Air.Temp}
+of the \emph{tao} data set. The variable \emph{Humidity} is used for the
+highlighting of imputed values. Figure~\ref{fig:bar_sleep} instead demonstrates
+a barplot of the variable \emph{Exp} of the data set \emph{sleep}. The
+variables \emph{Dream} and \emph{NonD} are used for the highlighting in this
+plot. 
+
+If the command line of  \proglang{R} is preferred, the same plots can be
+created with following commands:
+
+<<Hist_sleep_imp, results=hide, eval=FALSE>>=
+tao_vars <- c("Air.Temp","Humidity","Air.Temp_imp","Humidity_imp")
+histMiss(tao_kNN[,tao_vars], delimiter="imp", selection="any")
+
+sleep_vars <- c("Exp","Dream","NonD","Dream_imp","NonD_imp")
+barMiss(sleep_kNN[,sleep_vars], delimiter="_imp", selection="any")
+@
+
+\begin{figure}[ht!]
+\centering
+\subfloat[Histogram of data set \emph{tao}][Histogram of the variable \emph{Air.Temp} of the data set \emph{tao}, imputed values in \emph{Humidity} are highlighted]{
+	\includegraphics[width=0.46\textwidth]{fig-hist-tao.pdf}
+	\label{fig:hist_tao}}
+\hspace{2mm}
+\subfloat[Barplot of data set \emph{sleep}][Barplot of the variable \emph{Exp} of the data set \emph{sleep}, imputed values in \emph{Dream} or \emph{NonD} are highlighted]{
+    \includegraphics[width=0.46\textwidth]{fig-bar-sleep.pdf}
+    \label{fig:bar_sleep}}
+\caption{Histogram and barplot}
+\label{fig:histMiss_barMiss}
+\end{figure}
+
+\noindent Subsequently the different plot regions of
+Figure~\ref{fig:histMiss_barMiss} are explained:
+\\\\
+\underline{Histogram or barplot}\\
+The histogram or barplot of the variable of interest, depending on the type of
+this variable. The bars, which are colored \textbf{orange}, represent values,
+which are imputed in the additional variables and the values they're having in
+the variable of interest.
+\\\\
+In graphic Figure~\ref{fig:hist_tao}, it turns out, that values, which have
+been imputed in the variable \emph{Humidity} are having low values in the
+variable \emph{Air.Temp}. This can be a indicator that the distribution of the
+missing values was not missing completely at random.
+\\\\
+By looking at Figure~\ref{fig:bar_sleep}, one can see, that there are no
+imputed values in any of the other variables, when the category of \emph{Exp}
+is 3. Otherwise, if it's 5, the proportion of imputed values in the others
+raises to almost 50\%. Note also that category 1 is very dominant in this
+variable.
+\\\\
+\underline{Barplot}\\
+On the right side of each plot, a barplot is drawn, visualizing the imputed
+values in the variable of interest. The bar, which is colored
+\textbf{dark blue}, indicates imputed values in the variable of interest.
+The \textbf{dark orange} colored bar, represents values which are imputed
+values in the variable of interest \emph{and also} in the additional variables.
+\\\\
+The right bar plot of Figure~\ref{fig:hist_tao} in the example shows, that the
+amount of imputed values in both variables, \emph{Air.Temp} and
+\emph{Humidity}, is rather small.
+\\\\
+The fact, that no barplot is shown in Figure~\ref{fig:bar_sleep} is because
+there are no imputed values in the variable \emph{Exp} at all.
+
+\subsection{Customizing the graphic}\label{sec:custom_Histogram}
+Again, when using the command line of \proglang{R}, the graphic can be
+customized. Since the customizable parameters are similar in both methods, they
+will be explained using the example of a histogram.
+
+Subsequently, an example code of customized histogram plots is given and some
+of the adjustable parameters are explained:
+
+<<Hist_sleep_custom, results=hide, eval=FALSE>>=
+vars <- c("Dream","NonD","Sleep","Dream_imp","NonD_imp","Sleep_imp")
+histMiss(sleep_kNN[,vars], delimiter="imp", selection="any")
+histMiss(sleep_kNN[,vars], delimiter="imp", selection="all")
+histMiss(sleep_kNN[,vars], delimiter="imp", selection="all", only.miss=FALSE)
+@
+
+\begin{figure}[ht!]
+\centering
+\subfloat[Histogram with selection: \emph{any}]{
+	\includegraphics[width=0.46\textwidth]{fig-hist-sleep_select_any.pdf}
+	\label{fig:hist_sleep_select_any}}
+\hspace{2mm}
+\subfloat[Histogram with selection: \emph{all}]{
+    \includegraphics[width=0.46\textwidth]{fig-hist-sleep_select_all.pdf}
+    \label{fig:hist_sleep_select_all}}
+    \qquad
+\subfloat[Histogram with selection: \emph{all} and only.miss: \code{FALSE}]{
+    \includegraphics[width=0.5\textwidth]{fig-hist-sleep_select_all_onlymiss.pdf}
+    \label{fig:hist_sleep_select_all_onlymiss}}
+\caption[Customized histogram graphics of the data set \emph{sleep}]{Customized
+histogram graphics of variable \emph{Dream} of the data set \emph{sleep},
+imputed values in \emph{NonD} and/or \emph{Sleep} are highlighted}
+\label{fig:histMiss_customized}
+\end{figure}
+
+\noindent \underline{\emph{selection}}\\
+By altering the \emph{selection}, one can choose to highlight values, which
+are imputed in \emph{any} or in \emph{all} of the additional variables.
+\\\\
+Figure~\ref{fig:hist_sleep_select_any} and
+Figure~\ref{fig:hist_sleep_select_all} show the different results. The variable
+\emph{Dream} of the data set \emph{sleep} is set as variable of interest. The
+variables \emph{NonD} and \emph{Sleep} are used for highlighting.\\
+The outcome can be compared to the aggregation graphic of
+Figure~\ref{fig:aggr_sleep_imp_part}. By selecting \emph{any}, all values,
+which are either imputed in \emph{NonD} or \emph{Sleep} are highlighted. But,
+by changing it to \emph{all}, only the 4 values, which are imputed in
+both variables are displayed.
+\\\\
+The \emph{tao} data set wasn't chosen for this example, since almost all
+imputed values are either in the variable \emph{Air.Temp} or in \emph{Humidity}
+and the third variable containing imputed values, \emph{Sea.Surface.Temp}, only
+has 3 imputed values. Therefore, changing the \emph{selection} would have
+marginal effect in the graphic. 
+\\\\
+\underline{\emph{only.miss}}\\
+By setting \emph{only.miss} to \code{FALSE}, a barplot with two bars, instead
+of just one, is printed on the right side of the plot. Both are split in two
+parts again. This barplot is not on the same scale as the main plot anymore,
+hence an additional y-axis is printed.
+\\\\
+The first bar corresponds to observed values in the variables of interest. The
+bar, which is colored \textbf{orange}, marks values, which are observed in the
+variable of interest, but are imputed values in the additional variables.
+\\\\
+The second bar is like the bar in the previous histogram plots, it indicates
+imputed values in the variable of interest. The \textbf{dark orange} bar
+describes values, which are imputed in the variable of interest and also in
+the additional variables.
+\\\\
+The highlighting of the imputed values in the additional variables is based on
+the choice of the \emph{selection}.
+\\\\
+The Example in Figure~\ref{fig:hist_sleep_select_all_onlymiss} is a plot with
+\emph{only.miss} set to \code{FALSE}. Since the \emph{selection} is set to
+\emph{all}, only imputed values in both of the additional variables are
+highlighted.\\
+Once again, the graphic can be compared to the aggregation graphic of
+Figure~\ref{fig:aggr_sleep_imp_part}. The highlighted values of the first bar
+represent the two values, which are observed values in the variable
+\emph{Dream}, but are imputed values in both variables, \emph{NonD} and
+\emph{Sleep}. Whereas the highlighted values of the second bar correspond to
+the two values which are imputed in all of the three variables.
+
+\subsection{Interactive features}
+This graphic supports interactive features. By clicking in the right margin of
+the plot region , the graphic is switched to the next variable in the given
+data set. Likewise, by clicking in the left margin, the graphic is switched to
+the previous variable. Clicking anywhere else on the graphic device quits the
+interactive session.
+
+Note that the program automatically checks the type of the new variable of
+interest and executes the appropriate graphical method. This means, that by
+switching the variable of interest, the graphic can also switch from a
+histogram to a barplot and vice versa.
+\\\\
+Interactivity is always active by default. However, when using the command line
+of \proglang{R}  it can be disabled by setting the parameter \emph{interactive}
+to \code{FALSE}.
+
+
+\section{Spinogram and spineplot with imputed missings}
+Depending on the type of the variable of interest, if it's either of type
+\textbf{numerical} or \textbf{categorial}, a spinogram, respectively a
+spineplot is created.
+\\\\
+The spinogram is an alteration to the histogram of the previous chapter (see
+section~\ref{sec:Histogram}), where, instead of the vertical axis, the
+horizontal axis is scaled according to relative frequencies of the
+categories/classes. The vertical axis is rather scaled to a height of 1.
+
+The spineplot is the same modification performed on the barplot method.
+\\\\
+Like before, if more than one variable is supplied, the bins are split
+according to the values, which are imputed in the additional variables. Hence,
+the proportion of highlighted observations in each category/class is displayed
+on the vertical axis. Since the height of each cell corresponds to the
+proportion of highlighted observations, it is now possible to compare the
+proportions of imputed values among the different categories/classes.
+
+Significant differences in these proportions indicate a missing at random
+situation, which should be considered, e.g., when generating close-to-reality
+scenarios for missing data in simulation studies. \citep{Templ12}
+
+Also, imputed values in the variable of interest are visualized with a
+spineplot on the right side of the plot, which is again separated from the main
+plot by a small gap and also split if more than one variable is supplied.
+
+\emph{Note that the type of the variable of interest is automatically checked
+again and a suitable graphical method is then executed by the program.
+For user's convenience, the GUI also specifies different options for both
+methods and if the wrong method for the variable of interest is selected,
+the appropriate one is executed anyhow too.}
+\\\\
+The graphic can be produced by first selecting the variable of interest in the
+\emph{Select Variables} dialog and the variable(s), which should be used for
+highlighting, in the \emph{Highlight Variables in Plots} dialog. After
+choosing, whether imputed values in \emph{any} or \emph{all} of the additional
+variables should be highlighted in the \emph{Selection for Highlighting}
+dialog, the graphic is displayed by clicking on either \texttt{Diagnostics
+$\rightarrow$ Spinogram with imputed missings} or \texttt{Diagnostics
+$\rightarrow$ Spine Plot with imputed missings} (depending on the type of the
+variable of interest).
+\\\\
+Figure~\ref{fig:spineMiss} shows an example of the outcome with the two
+different types of variables of interest.
+
+Figure~\ref{fig:spine_tao} is a spinogram of the familiar variable
+\emph{Air.Temp} of the \emph{tao} data set. The variable \emph{Humidity} is
+again used for highlighting. Since the variable of interest is
+\textbf{numerical}, a spinogram is drawn.
+
+Figure~\ref{fig:spine_sleep} illustrates a spineplot, because the variable of
+interest, \emph{Exp} of the data set \emph{sleep}, is of \textbf{categorial}
+type. The variables \emph{Dream}, \emph{NonD} and \emph{Sleep} are used for
+highlighting.
+\\\\
+If the command line of  \proglang{R} is preferred, the same plots can be
+created with following commands:
+
+<<Spine_imp, results=hide, eval=FALSE>>=
+tao_vars <- c("Air.Temp","Humidity","Air.Temp_imp","Humidity_imp")
+spineMiss(tao_kNN[,tao_vars], delimiter="imp", selection="any")
+
+sleep_vars <- c("Exp","Dream","NonD","Sleep","Dream_imp","NonD_imp","Sleep_imp")
+spineMiss(sleep_kNN[,sleep_vars], delimiter="_imp")
+@
+
+\begin{figure}[ht!]
+\centering
+\subfloat[Spinogram of the data set \emph{tao}][Spinogram of the variable \emph{Air.Temp} of the data set \emph{tao}, imputed values in \emph{Humidity} are highlighted]{
+	\includegraphics[width=0.46\textwidth]{fig-spine-tao.pdf}
+	\label{fig:spine_tao}}
+\hspace{2mm}
+\subfloat[Spineplot of the data set \emph{sleep}][Spinoplot of the variable \emph{Exp} of the data set \emph{sleep}, imputed values in \emph{Dream}, \emph{NonD} or \emph{Sleep} are highlighted]{
+    \includegraphics[width=0.46\textwidth]{fig-spine-sleep.pdf}
+    \label{fig:spine_sleep}}
+\caption{Spinogram and Spinoplot}
+\label{fig:spineMiss}
+\end{figure}
+
+\noindent Subsequently the different plot regions of Figure~\ref{fig:spineMiss}
+are explained:
+\\\\
+\underline{Spinogram or spineplot}\\
+The spinogram or spineplot, depending on the type of the variable of interest.
+Similar to the histogram method in section~\ref{sec:Histogram}, the bars,
+which are colored \textbf{orange}, represent values, which are imputed in the
+additional variables and the values they're having in the variable of interest.
+
+Instead of the height, in the spinogram the width of the bins represent the
+relative frequency of the categories/classes.
+\\\\
+Figure~\ref{fig:spine_tao} is a different representation of the histogram
+graphic in Figure~\ref{fig:hist_tao}, thus the results are similar. Though, the
+proportion of imputed values can now be compared among the different
+categories/classes.
+\\\\
+The same applies to Figure~\ref{fig:spine_sleep}, it's also a modified version
+of the barplot in Figure~\ref{fig:bar_sleep}. Certainly, the dominance of the
+value 1 is now more obvious.
+\\\\
+\underline{Spineplot}\\
+A spineplot, visualizing the imputed values in the variable of interest is
+printed on the right side of each plot. The bar, which is colored \textbf{dark
+blue}, indicates imputed values in the variable of interest. The \textbf{dark
+orange} colored bar, represents values which are imputed in the variable of
+interest \emph{and also} in the additional variables.
+\\\\
+The missing spineplot in Figure~\ref{fig:spine_sleep} again denotes to the
+fact, that there are no imputed values in this variable at all.
+
+\subsection{Customizing the graphic}
+Since the important customizable parameters are the same as in the histogram
+method, please refer to section~\ref{sec:custom_Histogram} for a detailed
+explanation.
+\\\\
+Subsequently, the \proglang{R} code for a graphical representation of a 
+spinogram with the parameter \emph{only.miss} set to \code{FALSE} and 
+\emph{selection} set to \emph{all} is given. The resulting plot is shown in
+Figure~\ref{fig:spineMiss_customized}. This graphic shows a different
+representation of the graphic in
+Figure~\ref{fig:hist_sleep_select_all_onlymiss}.
+
+<<Spine_imp_custom, results=hide, eval=FALSE>>=
+vars <- c("Dream","NonD","Sleep","Dream_imp","NonD_imp","Sleep_imp")
+spineMiss(sleep_kNN[,vars], delimiter="imp", selection="all", only.miss=FALSE)
+@
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{fig-spine-sleep_select_all_onlymiss.pdf}
+\caption[Spinogram of the data set \emph{sleep} with selection: \emph{all} and only.miss: \code{FALSE}]{
+Spinogram of variable \emph{Dream} of the data set \emph{sleep}, imputed values
+in \emph{NonD} and \emph{Sleep} are highlighted and only.miss is set to
+\code{FALSE}}
+\label{fig:spineMiss_customized}
+\end{center}
+\end{figure}
+
+\subsection{Interactive features}
+This method also supports interactive features. By clicking in the right margin
+of the plot region, the graphic is switched to the next variable in the given
+data set. Likewise, by clicking in the left margin, the graphic is switched to
+the previous variable. Clicking anywhere else on the graphic device quits the
+interactive session.
+
+The program automatically checks the type of the new variable of interest again
+and executes the appropriate graphical method. This means, that by switching
+the variable of interest, the graphic can also switch from a spinogram to a
+spineplot and vice versa.
+\\\\
+Interactivity is always active by default. However, when using the command line
+of \proglang{R}  it can be disabled by setting the parameter \emph{interactive}
+to \code{FALSE}.
+
+
+\section{Boxplot with imputed missings}\label{sec:Boxplot}
+Like the previous methods, the well-known boxplot method is also altered to
+display information about imputed values. The plot consists of three boxplots:
+First, a normal boxplot of the variable of interest is produced. Second, two
+boxplots are drawn, which are grouped by observed and imputed values in the
+additional variables and the values of them in the variable of interest.
+Additionally, the frequencies of observed and imputed values will be given for
+each boxplot.
+\\\\
+A lot of information can be retrieved from this graphic. It gives a good
+overview about the distribution of the variable of interest. Also, outliers can
+be identified easily. Furthermore, by grouping between observed and imputed
+values, it can be analyzed if the distribution differs. Or it can be reviewed,
+if, for instance, there are outliers in the variable of interest, which are
+imputed values in the additional variables. Both can be an indicator that the
+pattern of missings has a specific structure, because of which the imputed
+values have been missing.
+
+The graphic can be produced by first selecting the variable of interest in the
+\emph{Select Variables} dialog and the variable(s), which should be used for
+highlighting, in the \emph{Highlight Variables in Plots} dialog. After
+choosing, whether imputed values in \emph{any} or \emph{all} of the additional
+variables should be highlighted in the \emph{Selection for Highlighting}
+dialog, the graphic is displayed by clicking on \texttt{Diagnostics
+$\rightarrow$ Boxplot with imputed missings}.
+\\\\
+Figure~\ref{fig:box_sleep} shows a boxplot of the, meanwhile well-known,
+variable \emph{Dream} of the \emph{sleep} data set. The variables \emph{NonD}
+and \emph{Sleep} are used for highlighting again.
+
+If the command line of  \proglang{R} is preferred, the same plot can be created
+with following commands:
+
+<<Box_sleep_imp, results=hide, eval=FALSE>>=
+vars <- c("Dream","NonD","Sleep","Dream_imp","NonD_imp","Sleep_imp")
+pbox(sleep_kNN[,vars], delimiter="_imp", selection="any")
+@
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{fig-box-sleep.pdf}
+\caption[Boxplot of the \emph{sleep} data set]{Boxplot of the variable
+\emph{Dream} of the \emph{sleep} data set, grouped by imputed values in
+\emph{NonD} or \emph{Sleep}}
+\label{fig:box_sleep}
+\end{center}
+\end{figure}
+
+\noindent Subsequently the different plot regions of Figure~\ref{fig:box_sleep}
+are explained:
+\\\\
+\underline{Left Boxplot}\\
+A normal boxplot of the variable of interest.
+\\\\
+This example shows, that three values of the variable \emph{Dream} are
+obviously outliers. In the histogram of Figure~\ref{fig:hist_sleep_select_any},
+this wasn't as visible as it's here. 
+\\\\
+\underline{Right two Boxplots}\\
+The first boxplot consists of values, which are observed in the additional
+variables and the values of them in the variable of interest. Whereas the
+second one marks values which are imputed in the additional variables and
+again, the values they're having in the variables of interest.
+\\\\
+By looking at the graphic in Figure~\ref{fig:box_sleep}, one can see, that
+the three outliers of the variable \emph{Dream} are observed values in the
+additional variables. This excludes the possibility, that the outliers in this
+variables have been causing the missing values in the other variables. Also the
+distribution of observed and imputed values can be compared, which apparently
+differs.
+\\\\
+\underline{Frequencies}\\
+In the bottom of the plot region, the frequencies of observed and imputed
+values is printed. The first line corresponds to observed values in the
+variable of interest and their distribution in the two groups and the second
+line to the accordant imputed values.
+\\\\
+The frequencies of this example show, that the variable \emph{Dream} has 62
+values in total, whereat 12 values of them are imputed values. 48 values are
+also observed in the other variables, none are imputed in the variable
+\emph{Dream} and observed in the others. Altogether, there are 14 values which
+are imputed in any of the additional variables and 12 of them are also imputed
+in the variable \emph{Dream}, which means, that two values are only imputed in
+the variables \emph{NonD} or \emph{Sleep}. This result can be verified by
+looking at the aggregation plot of Figure~\ref{fig:aggr_sleep_imp_part}.
+
+\subsection{Customizing the graphic}\label{sec:Boxplot_custom}
+This graphic can also be customized when using the command line of
+\proglang{R}. Subsequently, an example code of a customized boxplot is given
+and some of the adjustable parameters are explained:
+
+<<Box_sleep_custom, results=hide, eval=FALSE>>=
+vars <- c("Dream","NonD","Sleep","Dream_imp","NonD_imp","Sleep_imp")
+pbox(sleep_kNN[,vars], delimiter="_imp", selection="all")
+@
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{fig-box-sleep_select_all.pdf}
+\caption[Boxplot of the data set \emph{sleep} with selection: \emph{all}]{
+Boxplot of the variable \emph{Dream} of the \emph{sleep} data set, grouped by
+imputed values in \emph{NonD} and \emph{Sleep}}
+\label{fig:box_sleep_select_all}
+\end{center}
+\end{figure}
+
+\noindent \underline{\emph{selection}}\\
+By altering the \emph{selection}, one can choose to group the values of the
+variable of interest according to values which are either observed or imputed
+in \emph{any} or in \emph{all} of the additional variables.
+\\\\
+In Figure~\ref{fig:box_sleep_select_all} the same variables as in
+Figure~\ref{fig:box_sleep} are used, but the \emph{selection} is set to
+\emph{all}. The number of values which are imputed in \emph{NonD} and
+\emph{Sleep} is four. Two values are imputed in all variables. This result can
+again be verified by looking at the aggregation plot of
+Figure~\ref{fig:aggr_sleep_imp_part}.
+
+Note that also the labels of the grouped boxplots have changed.
+\\\\
+\underline{\emph{numbers}}\\
+If set to \code{FALSE}, the output of the frequencies of observed and imputed
+values is excluded from the graphic.
+
+\subsection{Interactive features}
+This method again supports interactive features. By clicking in the right
+margin of the plot region, the graphic is switched to the next variable in the
+given data set. Likewise, by clicking in the left margin, the graphic is
+switched to the previous variable. Clicking anywhere else on the graphic device 
+quits the interactive session.
+\\\\
+Interactivity is always active by default. However, when using the command line
+of \proglang{R}  it can be disabled by setting the parameter \emph{interactive}
+to \code{FALSE}.
+
+
+\section{Parallel boxplots}\label{sec:Par_Boxplot}
+This graphical method is very similar to the boxplot function of the previous
+chapter (see Section~\ref{sec:Boxplot}), the only difference is, that the
+additional variables aren't combined. Instead, boxplots for each additional
+variable are created, whereat the values of the variable of interest are
+grouped according to the observed and imputed values of each particular
+variable. \emph{Note, that the variables that don't contain imputed values are
+excluded from the plot.}
+
+This plot is therefore especially useful to explore whether one
+continuous variable explains the distribution of missing values in any another
+variable. \citep{Templ12}
+\\\\
+The graphic can be produced by first selecting the variable of interest in the
+\emph{Select Variables} dialog and the variable(s), which should be used for
+highlighting, in the \emph{Highlight Variables in Plots} dialog. It's displayed
+by clicking on \texttt{Diagnostics $\rightarrow$ Parallel Boxplots}.
+\\\\
+Figure~\ref{fig:pbox_sleep} shows a parallel boxplot graphic. The same
+variables of the same data set as in Figure~\ref{fig:box_sleep} of the previous
+chapter are used.
+
+If the command line of  \proglang{R} is preferred, the same plot can be created
+with following commands:
+
+<<Box_sleep_imp, results=hide, eval=FALSE>>=
+vars <- c("Dream","NonD","Sleep","Dream_imp","NonD_imp","Sleep_imp")
+pbox(sleep_kNN[,vars], delimiter="_imp", selection="none")
+@
+
+\noindent Note, that by using the command line, changing from the normal
+boxplot to the parallel boxplot method is just a matter of changing the
+parameter \emph{selection} to \emph{none}.
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{fig-pbox-sleep.pdf}
+\caption[Parallel Boxplot of the \emph{sleep} data set]{Parallel Boxplot of the
+variable \emph{Dream} of the \emph{sleep} data set, imputed values in
+\emph{NonD} and \emph{Sleep} are highlighted separately}
+\label{fig:pbox_sleep}
+\end{center}
+\end{figure}
+
+\noindent \\Subsequently the different plot regions of
+Figure~\ref{fig:pbox_sleep} are explained:
+\\\\
+\underline{Left Boxplot}\\
+This is the same boxplot as in Figure~\ref{fig:box_sleep}.
+\\\\
+\underline{Boxplot for each additional variable}\\
+Two boxplots are drawn for each additional variable that contains imputed
+values. These boxplots are grouped according to the observed and imputed values
+in each particular variable, the values they're having in the variable of
+interest are used for the creation of the boxplots.
+\\\\
+In the example graphic, one can see the grouped boxplots for the variables
+\emph{NonD} and \emph{Sleep}. The distribution of the imputed values hasn't
+changed significantly.
+\\\\
+\underline{Frequencies}\\
+In the bottom of the plot region, the frequencies of observed and imputed
+values is printed again. The first line corresponds to observed values in the
+variable of interest and their distribution in the different groups and the
+second line to the accordant imputed values.
+\\\\
+Reading the second line shows, that all imputed values of \emph{Dream} are also
+imputed in the variable \emph{NonD}. In contrast, there are only two values,
+which are imputed in \emph{Sleep} and \emph{Dream}. Both can again be verified
+by looking at the aggregation plot of Figure~\ref{fig:aggr_sleep_imp_part}
+
+\subsection{Customizing the graphic}
+Like the previous boxplot method of section~\ref{sec:Boxplot}, the parameter
+\emph{numbers} can be adjusted to exclude the output of the frequencies.
+Therefore, please refer to section~\ref{sec:Boxplot_custom} for a detailed
+explanation.
+\\\\
+\underline{\emph{Tcl/Tk} window}\\
+The parallel boxplot method supports the embedment of the graphic in a
+\emph{Tcl/Tk} window. This is helpful if there is a large number of variables,
+because scrollbars are added to move from one part of the plot to another.
+\\\\
+To enable this option in the GUI, one has to go to \texttt{Options
+$\rightarrow$ Preferences} and tick the checkbox \emph{Embed multivariate plots
+ in Tcl/Tk} in the \emph{Miscellaneous}-section
+
+When using the command line of \proglang{R}, the function call has to be
+changed from \emph{pbox} to \textbf{TKRpbox}.
+
+\subsection{Interactive features}
+This method supports the same interactive features as the previous boxplot
+methods. By clicking in the right margin of the plot region, the graphic is 
+switched to the next variable in the given data set. Likewise, by clicking in
+the left margin, the graphic is switched to the previous variable. Clicking
+anywhere else on the graphic device quits the interactive session.
+\\\\
+Interactivity is always active by default. However, when using the command line
+of \proglang{R}  it can be disabled by setting the parameter \emph{interactive}
+to \code{FALSE}.
+
+
+\section{Marginplot}\label{sec:Marginplot}
+The marginplot is an enhancement to the normal scatterplot, here imputed values
+are highlighted for each variable. In addition to the scatterplot, boxplots for
+available and for imputed values, as well as univariate scatterplots for the
+imputed values are given in the plot margins. Furthermore the frequencies of
+imputed values are displayed, again for each variable.
+\\\\
+This graphical method provides a lot of information. The bivariate scatterplot
+gives an overview about the bivariate distribution of the chosen variables.
+Through the highlighting of imputed values, it can be inspected, if there was a
+certain structure, because of which theses values have been missing. Also
+errors which could have happened in the imputation process can be revealed. By
+looking at the boxplots and the univariate scatterplot for each of the
+variables, it can be analyzed if the distribution of observed and imputed
+values differs.
+
+It can be produced by first selecting the variables of interest in the
+\emph{Select Variables} dialog. \emph{Since this is a bivariate plot, only two 
+variables can be picked.} Afterwards, the graphic is displayed by
+clicking on \texttt{Diagnostics $\rightarrow$ Marginplot}.
+\\\\
+Figure~\ref{fig:marginplot_tao} shows a marginplot of the variables
+\emph{Air.Temp} and \emph{Humidity} of the data set \emph{tao}.
+
+If the command line of  \proglang{R} is preferred, the same plot can be created
+with following commands:
+
+<<Marginplot_tao_imp, results=hide, eval=FALSE>>=
+vars <- c("Air.Temp","Humidity","Air.Temp_imp","Humidity_imp")
+marginplot(tao_kNN[,vars], delimiter="imp", alpha=0.6)
+@
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{fig-marginplot-tao.pdf}
+\caption[Marginplot of the \emph{tao} data set]{Marginplot of the variables
+\emph{Air.Temp} and \emph{Humidity} of the \emph{tao} data set}
+\label{fig:marginplot_tao}
+\end{center}
+\end{figure}
+
+\noindent Subsequently the different plot regions of
+Figure~\ref{fig:marginplot_tao} are explained:
+\\\\
+\underline{Bivariate scatterplot}\\
+A scatterplot of the two variables of interest. The values, which are
+highlighted with an \textbf{orange} color, represent values of the first
+variable, which are imputed values in the second one. Whereas \textbf{dark
+orange} colored values mark values of the second variable, which are imputed in
+the first one. If values are imputed in both variables, they are distinguished
+by a \emph{black} color.
+\\\\
+This is a very interesting example. It confirms what could be guessed in the
+histogram graphic of Figure~\ref{fig:hist_tao}, the variable \emph{Air.Temp}
+is clearly separated in two clusters. Furthermore, it reveals, that imputed
+values of \emph{Humidity} only occur in the first cluster, which are values
+with low \emph{Air.Temp} and high \emph{Humidity} and that they are imputed
+with a value between 84 and 91. On the other hand, most of the imputed values
+of the variable \emph{Air.Temp} have been  imputed with a value between 26 and
+27 and mostly occur in the second cluster, which are value with high
+\emph{Air.Temp}.
+
+\emph{Note, that this conclusion is based on the chosen imputation method,
+which was the k-Nearest Neighbor imputation method in this example. Therefore,
+the result could be different when applying a different method, which will be
+demonstrated later on.}
+\\\\ 
+\underline{Boxplots and univariate scatterplot}\\
+The boxplots can be compared to the boxplot method of
+section~\ref{sec:Boxplot}. They are grouped according to observed and imputed
+values in the other variable and the values they're having in current one.
+
+The univariate scatterplots show the distribution of the imputed values of each
+variable in the respective other one. It's especially useful when used with
+transparency, so that the overplotting of values is prevented.
+\\\\
+In this example, the boxplots and univariate scatterplots illustrate that the
+distribution of observed and imputed values evidently differs in both
+variables.
+\\\\
+\underline{Frequencies of imputed values}\\
+In the bottom left corner of the plot region, the frequencies of imputed values
+are displayed. These values are also colored, according to the previous
+color-schema.
+\\\\
+The example graphic supplies the information, that the variable \emph{Air.Temp}
+contains 81 imputed values and there are 93 imputed values in the variable
+\emph{Humidity}. Furthermore, 3 values are imputed in both variables.
+
+\subsection{Customizing the graphic}\label{sec:Marginplot_custom}
+Unlike the previous methods, this graphic isn't as customizable. However, there
+are still a few interesting parameters, which will be explained subsequently:
+\\\\
+\underline{\emph{alpha}}\\
+The \emph{alpha} parameter controls the level of transparency. It's a numeric
+value between 0 and 1 and helps to prevent overplotting of the points in the
+scatterplot. Supplementary, it can be set to \code{NULL}, which disables
+transparency and is equivalent to setting it to 1.
+
+In the GUI, it can be changed in the \texttt{Options $\rightarrow$ Preferences}
+menu by changing the slider in the \emph{Set Alpha Value}-Section.
+\\\\
+\underline{\emph{zeros}}\\
+This is a logical vector of length two, indicating if either of the variables
+is semi-continuous (i.e. contains a considerable amount of zeros), this
+parameter can be set to \code{TRUE} for the particular variable, so that only
+non-zero observations are used for the drawing of the respective boxplot.
+
+\subsection{Comparison of imputation methods}
+The marginplot can also be used to compare the outcome of different imputation
+methods. Subsequently in Figure~\ref{fig:margin_imp_method}, two different
+plots of the same variables as before are given. In the first plot, the
+variables are imputed with the \emph{k-Nearest Neighbor} method, which is one
+of the built-in imputation methods of the package \pkg{VIM}. Whereas in the
+second plot, the variables are imputed with the \emph{mean} method of the
+package \pkg{e1071}.
+
+If the command line of  \proglang{R} is preferred, the same plots can be
+created with following commands:
+
+<<Marginplot_imp_methods, results=hide, eval=FALSE>>=
+tao_kNN <- kNN(tao, k = 5)
+tao_mean <- as.data.frame(impute(tao, what = "mean"))
+tao_mean <- cbind(tao_mean, tao_kNN[,9:11])
+
+vars <- c("Air.Temp","Humidity","Air.Temp_imp","Humidity_imp")
+marginplot(tao_kNN[,vars], delimiter="imp", alpha=0.6, main="kNN")
+marginplot(tao_mean[,vars], delimiter="imp", alpha=0.6, main="mean")
+@
+
+\begin{figure}[h]
+\centering
+\subfloat[Marginplot, kNN-Imputation]{
+	\includegraphics[width=0.5\textwidth]{fig-marginplot-kNN.pdf}
+	\label{fig:marginplot_kNN}}
+\subfloat[Marginplot, mean-Imputation]{
+    \includegraphics[width=0.5\textwidth]{fig-marginplot-mean.pdf}
+    \label{fig:marginplot_mean}}
+\caption[Marginplots with different imputation methods]{Marginplots of the
+variables \emph{Air.Temp} and \emph{Humidity} of the \emph{tao} data set,
+imputed with different imputation methods}
+\label{fig:margin_imp_method}
+\end{figure}
+
+\noindent Figure~\ref{fig:marginplot_kNN} shows the same graphic as 
+Figure~\ref{fig:marginplot_tao}, the missing values are imputed with the most
+related values in the data set. However, by looking at
+Figure~\ref{fig:marginplot_mean} one can see an obvious result of an
+\emph{mean} imputation process, the missings of each variable are imputed with
+the same value (the mean value of the particular variable). The data
+distribution is completely ruined, which is especially obvious in the variable
+\emph{Air.Temp} where all values are imputed in between the two clusters.
+
+\section{Scatterplot with imputed missings}\label{sec:Scatterplot}
+Like the marginplot of the previous chapter (see Section~\ref{sec:Marginplot}),
+this method is an adaptation of the normal scatterplot method. Imputed values
+of only one of the chosen variables are highlighted and also a rug
+representation of these values is printed on the axis of the other variable.
+Additionally, percentage coverage ellipses will be drawn.
+\\\\
+The scatterplot and the tolerance ellipses provide an overview about the
+bivariate data distribution and correlation of the chosen variables. Supplementary,
+the ellipses help to identify outliers. Unlike the marginplot method, imputed
+values are only highlighted for one particular variable, therefore the
+complexity of the graphic is reduced and the visibility can be improved. Still,
+special structures of the pattern of the missings, because of which the values
+have been missing, as well as errors which could have happened in the
+imputation process can be revealed. The rug representation indicates the values
+the highlighted values are having in the other variable. This method can be
+used to compare the outcome of different imputation methods too.
+
+It can be produced by first selecting the variable of interest in the
+\emph{Select Variables} dialog. \emph{Since this is a bivariate plot, only two 
+variables can be picked.} Afterwards, the graphic is displayed by
+clicking on \texttt{Diagnostics $\rightarrow$ Scatterplot with imputed
+Missings}.
+\\\\
+Figure~\ref{fig:scatt_tao} shows a Scatterplot of the same variables as in
+the marginplot of Figure~\ref{fig:marginplot_tao}, \emph{Air.Temp} and
+\emph{Humidity} of the \emph{tao} data set.
+
+If the command line of  \proglang{R} is preferred, the same plot can be created
+with following commands:
+
+<<Scatterplot_tao_imp, results=hide, eval=FALSE>>=
+vars <- c("Air.Temp","Humidity","Air.Temp_imp","Humidity_imp")
+scattMiss(tao_kNN[,vars], delimiter="imp", alpha=0.6)
+@
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{fig-scatt-tao.pdf}
+\caption[Scatterplot of the \emph{tao} data set]{Scatterplot of the variables
+\emph{Air.Temp} and \emph{Humidity} of the \emph{tao} data set}
+\label{fig:scatt_tao}
+\end{center}
+\end{figure}
+
+\noindent Subsequently the different plot regions of Figure~\ref{fig:scatt_tao}
+are explained:
+\\\\
+\underline{Bivariate scatterplot}\\
+Like the marginplot method, a scatterplot of the two chosen variables is
+printed. However, only imputed values of the one variable of interest are
+highlighted in \textbf{orange} color.
+\\\\
+In contrast to the plot of Figure~\ref{fig:marginplot_tao} the complexity is
+reduced a bit, but this example graphic still gives the same results. In this
+graphic, the imputed values of the variable \emph{Humidity} are highlighted.
+\\\\
+\underline{Percentage coverage ellipses}\\
+The percentage coverage ellipses provides information about the correlation of
+the variables and the general bivariate data distribution. It can also be used
+to identify bivariate outliers.
+\\\\
+Since the data in this example can clearly be split in two clusters, the
+ellipses don't give much information. The data should be split according to
+this clusters and each of the clusters should be examined separately.
+\\\\
+\underline{Rug representation}\\
+The rug representation is similar to an univariate scatterplot, each line
+indicates, that there is an imputed value in the other variable at this value
+of the current variable.
+\\\\
+Since imputed values in the variable \emph{Humidity} are highlighted, the rug
+representation shows the values, they're having in the variable
+\emph{Air.Temp}.
+
+\subsection{Customizing the graphic}
+Like the previous methods, there are some parameters can be customized.
+Subsequently, a few of them are explained:
+\\\\
+\underline{\emph{alpha}}\\
+The \emph{alpha} parameter controls the level of transparency. It's a numeric
+value between 0 and 1 and helps to prevent overplotting of the points in the
+scatterplot. Supplementary, it can be set to \code{NULL}, which disables
+transparency and is equivalent to setting it to 1.
+
+In the GUI, it can be changed in the \texttt{Options $\rightarrow$ Preferences}
+menu by changing the slider in the \emph{Set Alpha Value}-Section.
+\\\\
+\underline{Quantiles}\\
+The parameter \emph{quantile} sets the quantiles of the chi-square distribution
+that should be used for the tolerance ellipses. Supplementary, it can be set to
+\code{NULL} to suppress the plotting of the ellipses.
+\\\\
+\underline{Side}\\
+The \emph{side} argument alters the initial variables that are used for the
+highlighting of imputed values and the rug representation. It can be set to
+either \emph{1} or \emph{2}, whereas \emph{1} means, that the first variable is
+taken for the rug representation and the second one for the highlighting and
+vice-versa.
+\\\\
+\underline{\emph{zeros}}\\
+This is a logical vector of length two, indicating if either of the variables
+is semi-continuous (i.e. contain a considerable amount of zeros), this
+parameter can be set to \code{TRUE} for the particular variable, so that only
+non-zero observations of it are used for the computation of the tolerance
+ellipses.
+
+\subsection{Interactive features}
+Like most of the methods, this method also supports interactive features.
+Clicking in the bottom margin of the plot region changes the \emph{side}
+argument to 1, which means, that the rug representation is printed on the axis
+of the first variable in the data set and the second one is used for the 
+highlighting of imputed values. Likewise, by clicking in the left margin, the
+side argument is changed to 2. Clicking anywhere else on the graphic device
+quits the interactive session.
+\\\\
+Interactivity is always active by default. However, when using the command line
+of \proglang{R}  it can be disabled by setting the parameter \emph{interactive}
+to \code{FALSE}.
+
+
+\section{Bivariate jitter plot}
+In order to get information about the amount of observed and imputed values of
+the variables of interest, the bivariate jitter plot can be used. Thereby, the
+plot is split into up to four regions, according to the existence of imputed
+values in one or in both variables. Supplementary, this amount is represented
+by a number in each of the plot region.
+\\\\
+Unlike the aggregation graphic of section~\ref{sec:Aggregation}, this graphic
+focuses on two variables. It particularly provides a better overview about the
+amount of imputed values in both of the variables if there are many
+combinations with other variables too. \emph{Note, that if either of the
+variables doesn't contain imputed values, the respective plot region for the
+imputed values of this particular variable, as well as the plot region for
+imputed values in both of the variables, are excluded.}
+
+The graphic can be produced by first selecting the variables of interest in the
+\emph{Select Variables} dialog. \emph{Since this is a bivariate plot, only two 
+variables can be picked.} Afterwards, the graphic is displayed by
+clicking on \texttt{Diagnostics $\rightarrow$ Bivariate Jitter Plot}.
+\\\\
+Figure~\ref{fig:jitt_tao} shows a bivariate jitter plot. Again, the meanwhile
+well-known variables as in the marginplot of Figure~\ref{fig:marginplot_tao}
+and the scatterplot of Figure~\ref{fig:scatt_tao}, \emph{Air.Temp} and 
+\emph{Humidity}, are used.
+
+If the command line of  \proglang{R} is preferred, the same plot can be created
+with following commands:
+
+<<Jitt_tao_imp, results=hide, eval=FALSE>>=
+vars <- c("Air.Temp","Humidity","Air.Temp_imp","Humidity_imp")
+scattJitt(tao_kNN[,vars], delimiter="imp", alpha=0.6)
+@
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{fig-jitt-tao.pdf}
+\caption[Bivariate Jitter plot of the \emph{tao} data set]{Bivariate Jitter
+Plot of the variables \emph{Air.Temp} and \emph{Humidity} of the \emph{tao}
+data set}
+\label{fig:jitt_tao}
+\end{center}
+\end{figure}
+
+\noindent Subsequently the four plot regions of Figure~\ref{fig:jitt_tao} are
+explained:
+\\\\
+\underline{Lower left}\\
+Here, all values, which are observed values in both variables are visualized by
+jittered points. Additionally, the total amount is given by a number in the
+upper right corner of this plot region.
+\\\\
+This example graphic shows the 736 points, that are observed in both variables.
+\\\\
+\underline{Upper left}\\
+The jittered points in the upper left corner, marks values, which are imputed
+in the second variable, but observed in the first. The total amount is
+displayed in the lower right corner of this plot region.
+\\\\
+Here, one can see the 93 values, which are only imputed in the variable
+\emph{Humidity}.
+\\\\
+\underline{Lower right}\\
+In the lower right region, values, which are imputed values in the first, but
+observed in the second variable are shown by the jittered points. Again, the
+total number is given, here in the upper left corner of this plot region.
+\\\\
+The graphic shows the 81 values, which are only imputed in the variable
+\emph{Air.Temp}.
+\\\\
+\underline{Upper right}\\
+Last, but not least, the upper right plot region illustrates values, which are
+imputed in both of the variables and again, the total number of this values
+given in the lower left corner of this plot region.
+\\\\
+The example points out, that there are 3 values, which are imputed in both of
+the variables.
+
+\subsection{Customizing the graphic}
+Like the marginplot of section~\ref{sec:Marginplot}, this graphic isn't as
+customizable as other methods. However, there are still a few interesting
+parameters, which will be explained subsequently:
+\\\\
+\underline{\emph{alpha}}\\
+The \emph{alpha} parameter controls the level of transparency. It's a numeric
+value between 0 and 1 and helps to prevent overplotting of the points in the
+jittered plots. Supplementary, it can be set to \code{NULL}, which disables
+transparency and is equivalent to setting it to 1.
+
+In the GUI, it can be changed in the \texttt{Options $\rightarrow$ Preferences}
+menu by changing the slider in the \emph{Set Alpha Value}-Section.
+\\\\
+\underline{\emph{numbers}}\\
+If set to \code{FALSE}, the output of the frequencies of observed and imputed
+values is excluded from the graphic.
+
+
+\section{Marginplot matrix}\label{sec:Marginmatrix}
+This function creates a scatterplot matrix, with a panel function that is based
+on the marginplot method of section~\ref{sec:Marginplot}. Therewith, it's
+possible to get an overview about the distribution of multiple parameters at
+once.
+
+It can be produced by first selecting the variables of interest in the
+\emph{Select Variables} dialog. Afterwards, the graphic is displayed by
+clicking on \texttt{Diagnostics $\rightarrow$ Marginplot Matrix}.
+\\\\
+Figure~\ref{fig:marginmatrix_tao} shows an example of a marginplot matrix. In
+addition to the beforehand used variables of the data set \emph{tao},
+\emph{Air.Temp} and \emph{Humidity}, the variable \emph{Sea.Surface.Temp} is
+added to the plot.
+
+If the command line of  \proglang{R} is preferred, the same plot can be created
+with following commands:
+
+<<Marginmatrix_tao_imp, results=hide, eval=FALSE>>=
+vars <- c("Air.Temp","Humidity","Sea.Surface.Temp","Air.Temp_imp","Humidity_imp","Sea.Surface.Temp_imp")
+marginmatrix(tao_kNN[,vars], delimiter = "_imp", alpha=0.6)
+@
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{fig-marginmatrix-tao.pdf}
+\caption[Marginplot Matrix of the \emph{tao} data set]{Marginplot Matrix of the
+variables \emph{Air.Temp}, \emph{Humidity} and \emph{Sea.Surface.Temp} of the
+\emph{tao} data set}
+\label{fig:marginmatrix_tao}
+\end{center}
+\end{figure}
+
+\noindent In the panels of the plot of Figure~\ref{fig:marginmatrix_tao}, one
+can see the different marginplots. Interestingly, it turns out that the
+variable \emph{Sea.Surface.Temp} is also clearly separated in two clusters.
+Values, which are imputed values in the variable \emph{Humidity} almost only
+appear in the cluster, which indicates low values of \emph{Sea.Surface.Temp}.
+Whereas imputed values in the variable \emph{Air.Temp} almost only belong to
+the cluster, which marks high values in \emph{Sea.Surface.Temp}. The
+highlighted values of \emph{Air.Temp} in the upper right (or lower left) panel
+reveal, that the imputation process wasn't as good, as it was assumed from
+plots like Figure~\ref{fig:marginplot_tao}.
+
+\subsection{Customizing the graphic}
+The marginplot matrix method supports the same adjustable parameters as the
+marginplot method it is based on, therefore, please refer to
+section~\ref{sec:Marginplot_custom} for a detailed explanation. However, there
+is still one additional feature that's worth mentioning:
+\\\\
+\underline{\emph{Tcl/Tk} window}\\
+Like the parallel boxplot method of section~\ref{sec:Par_Boxplot}, this method
+also supports the embedment of the graphic in a \emph{Tcl/Tk} window. This is
+helpful if there is a large number of variables, because scrollbars are added
+to move from one part of the plot to another.
+\\\\
+To enable this option in the GUI, one has to go to \texttt{Options
+$\rightarrow$ Preferences} and tick the checkbox \emph{Embed multivariate plots
+ in Tcl/Tk} in the \emph{Miscellaneous}-section
+
+When using the command line of \proglang{R}, the function call has to be
+changed from \emph{marginmatrix} to \textbf{TKRmarginmatrix}.
+
+\section{Scatterplot matrix with imputed missings}\label{sec:Scattmatrix}
+Similar to the marginplot matrix method of the previous chapter (see
+section~\ref{sec:Marginmatrix}), this function also creates a scatterplot
+matrix, but with a panel function that is based on the scatterplot method of
+section~\ref{sec:Scatterplot}. It's also intended to get an overview about the
+distribution of multiple parameters at a single view. In contrast to the
+marginplot matrix method, certain variables can be chosen to be used for the
+highlighting of imputed values. In the diagonal panels of the plot, density
+plots for each variable are drawn. Furthermore, these plots are split according
+to the observed and the imputed values of the variables which have been
+selected for highlighting.
+
+It can be produced by first selecting the variables that should be plotted in
+the \emph{Select Variables} dialog and the variable(s), which should be used
+for highlighting, in the \emph{Highlight Variables in Plots} dialog. After
+choosing, whether imputed values in \emph{any} or \emph{all} of the additional
+variables should be highlighted in the \emph{Selection for Highlighting}
+dialog, the graphic is displayed by clicking on \texttt{Diagnostics
+$\rightarrow$ Scatterplot Matrix with imputed Missings}.
+\\\\
+Figure~\ref{fig:scattmatrix_tao} shows an example of a scatterplot matrix.
+The same variables, as in the marginplot matrix of
+Figure~\ref{fig:marginmatrix_tao} are used for this plot. The variable
+\emph{Air.Temp} is used for the highlighting of imputed values.
+
+If the command line of  \proglang{R} is preferred, the same plot can be created
+with following commands:
+
+<<Scattmatrix_tao_imp, results=hide, eval=FALSE>>=
+vars <- c("Air.Temp","Humidity","Sea.Surface.Temp","Air.Temp_imp","Humidity_imp","Sea.Surface.Temp_imp")
+scattmatrixMiss(tao_kNN[,vars], highlight="Air.Temp", delimiter = "_imp", alpha=0.6)
+@
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{fig-scattmatrix-tao.pdf}
+\caption[Scatterplot matrix of the \emph{tao} data set]{Scatterplot Matrix of
+the variables \emph{Air.Temp}, \emph{Humidity} and \emph{Sea.Surface.Temp} of
+the \emph{tao} data set, imputed values in \emph{Air.Temp} are highlighted}
+\label{fig:scattmatrix_tao}
+\end{center}
+\end{figure}
+
+\noindent Subsequently the different plot regions of
+Figure~\ref{fig:scattmatrix_tao} are explained:
+\\\\
+\underline{Diagonal Panels}\\
+In each diagonal panel a density plot is drawn. This plot is split in two
+lines, the \textbf{blue} line corresponds to the density of the values of the
+particular variable of the panel, which are observed in the variables, that are
+selected for highlighting. Whereas the \textbf{orange} colored line represents
+the density of the values, which are imputed values in these variables.
+\\\\
+In the example, only the variable \emph{Air.Temp} is used for highlighting. It
+basically confirms the conclusions that have been drawn from the previous
+graphical methods, but one can see it at a single glance now.
+\\\\
+\underline{Scatterplot Panels}\\
+In the other panels of the plot, the scatterplot method of
+section~\ref{sec:Scatterplot} is applied to each pair of variables. To improve
+the visibility, the percentage coverage ellipses are left out in this method.
+Like in the diagonal panels, the \textbf{orange} highlighted values mark values
+of the particular pair of variables, which are imputed values in the variables,
+that are chosen for highlighting. 
+\\\\ 
+The example shows, that the possibility of choosing which variables should be
+highlighted in the plot is very convenient. The output of the graphic attest
+the results of the marginplot matrix of Figure~\ref{fig:marginmatrix_tao}.
+
+\subsection{Customizing the graphic}\label{sec:Scattmatrix_custom}
+This graphic is highly customizable, when using the command line of R.
+Subsequently, an a few of the adjustable parameters are explained:
+\\\\
+\underline{\emph{alpha}}\\
+The \emph{alpha} parameter controls the level of transparency. It's a numeric
+value between 0 and 1 and helps to prevent overplotting of the points in the
+scatterplots. Supplementary, it can be set to \code{NULL}, which disables
+transparency and is equivalent to setting it to 1.
+
+In the GUI, it can be changed in the \texttt{Options $\rightarrow$ Preferences}
+menu by changing the slider in the \emph{Set Alpha Value}-Section.
+\\\\
+\underline{\emph{highlight}}\label{sec:Scattmatrix_highlight}\\
+The parameter \emph{highlight} is a vector giving the names of the variables,
+or the position in the given data set, that should be used for highlighting.
+Alternatively, it can be set to \code{NULL} (the default value), which means,
+that all variables are used.
+\\\\
+\underline{\emph{selection}}\\
+By altering the \emph{selection}, one can choose to highlight values, which
+are imputed in \emph{any} or in \emph{all} of the variables, that are selected
+for highlighting.
+\\\\
+\underline{\emph{plotvars}}\\
+Similar to \emph{highlight}, the parameter \emph{plotvars} is a vector with the
+names of the variables, or the position in the data set, that should be used
+for plotting. Is can also be set to \code{NULL} (the default value), so that
+all variables are plotted.
+
+By combining the parameters \emph{highlight} and \emph{plotvars}, it's possible
+to use certain variables just for highlighting and omit the separate
+scatterplot of this variable. For instance, this can be helpful to find special
+structures in other variables, because of which the imputed values of the
+highlighted variables have been missing, or structures, which had an impact on
+the imputation process. 
+\\\\
+Figure~\ref{fig:scattmatrix_tao_highlight} shows an example of such a
+scatterplot matrix. The variable \emph{UWind} and \emph{VWind} are plotted and
+values of the variable \emph{Air.Temp} are used for highlighting only.
+
+If the command line of  \proglang{R} is preferred, the same plot can be created
+with following commands:
+
+<<Scattmatrix_tao_highlight, results=hide, eval=FALSE>>=
+vars <- c("Air.Temp","UWind","VWind","Air.Temp_imp")
+scattmatrixMiss(tao_kNN[,vars], highlight="Air.Temp", plotvars=c("UWind","VWind"), delimiter = "_imp", alpha=0.6)
+@
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{fig-scattmatrix-tao_highlight.pdf}
+\caption[Scatterplot matrix of the \emph{tao} data set, imputed values of
+\emph{Air.Temp} are only highlighted]{Scatterplot matrix of the variables
+\emph{UWind} and \emph{VWind} of the \emph{tao} data set, imputed values in
+\emph{Air.Temp} are only highlighted}
+\label{fig:scattmatrix_tao_highlight}
+\end{center}
+\end{figure}
+
+\noindent This example shows that the plotted variables have no evident
+influence on the imputed values of \emph{Air.Temp}. Additionally, one can see,
+that both variables aren't correlated.
+\\\\
+\underline{\emph{Tcl/Tk} window}\\
+Like the marginplot matrix method of section~\ref{sec:Marginmatrix}, this
+method also supports the embedment of the graphic in a \emph{Tcl/Tk} window.
+This is helpful if there is a large number of variables, because scrollbars are
+added to move from one part of the plot to another.
+\\\\
+To enable this option in the GUI, one has to go to \texttt{Options
+$\rightarrow$ Preferences} and tick the checkbox \emph{Embed multivariate plots
+in Tcl/Tk} in the \emph{Miscellaneous}-section
+
+When using the command line of \proglang{R}, the function call has to be
+changed from \emph{scattmatrixMiss} to \textbf{TKRscattmatrixMiss}.
+
+\subsection{Interactive features}
+This method supports the interactive selection of the variables, that should be
+used for highlighting. Clicking in the diagonal panels of the plot, adds the
+particular variable to to the selection. If the variable was already selected,
+it is removed instead. Clicking anywhere else on the graphic device quits the
+interactive session.
+\\\\
+Interactivity is always active by default. However, when using the command line
+of \proglang{R}  it can be disabled by setting the parameter \emph{interactive}
+to \code{FALSE}.
+
+
+\section{Parallel coordinate plot with imputed missings}
+Like most methods of the package \pkg{VIM}, the parallel coordinate plot is
+also an adjustment of the standard method to support the highlighting of
+imputed values. The variables are represented by parallel axes. The data is
+scaled and each observation is displayed as a continuous line, indicating the
+value it's having in each of the variables.  Imputed values of certain variable
+can be highlighted. Thereby, the whole line is emphasized to view the values,
+the particular observation is having along the variables.
+\\\\
+This graphical method is very useful to detect multivariate dependencies, or
+structures, because of which the imputed values have been missing, since it can
+easily show multiple parameters in one graphic.
+
+It can be produced by first selecting the variables that should be plotted in
+the \emph{Select Variables} dialog and the variable(s), which should be used for
+highlighting, in the \emph{Highlight Variables in Plots} dialog. After
+choosing, whether imputed values in \emph{any} or \emph{all} of the additional
+variables should be highlighted in the \emph{Selection for Highlighting}
+dialog, the graphic is displayed by clicking on \texttt{Diagnostics
+$\rightarrow$ Parallel Coordinate Plot with imputed Missings}.
+\\\\
+Figure~\ref{fig:parcoord_chorizon} shows an example of a parallel coordinate
+plot of the \emph{chorizonDL} data set. The variable \emph{Bi} is the only one,
+which contains imputed values in this subset, hence it is only used for
+highlighting. The plotted variables are \emph{Al\_XRF, Ca\_XRF, Fe\_XRF,
+K\_XRF, Mg\_XRF, Mn\_XRF, Na\_XRF,  P\_XRF, Si\_XRF} and \emph{Ti\_XRF}. 
+
+If the command line of  \proglang{R} is preferred, the same plot can be created
+with following commands:
+
+<<Parcoord_chorizon_imp, results=hide, eval=FALSE>>=
+chorizon_kNN <- kNN(chorizonDL[,c(15,101:110)], k=5)
+parcoordMiss(chorizon_kNN, delimiter = "_imp" , plotvars=2:11)
+@
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=1\textwidth]{fig-parcoord_chorizon.pdf}
+\caption[Parallel coordinate plot of the \emph{chorizon} data set]{Parallel
+coordinate plot of the variables \emph{Al\_XRF, Ca\_XRF, Fe\_XRF, K\_XRF,
+Mg\_XRF, Mn\_XRF, Na\_XRF,  P\_XRF, Si\_XRF} and \emph{Ti\_XRF} of the
+\emph{chorizon} data set, imputed values in \emph{Bi} are highlighted}
+\label{fig:parcoord_chorizon}
+\end{center}
+\end{figure}
+
+\noindent The example in Figure~\ref{fig:parcoord_chorizon} shows, that, except
+of two outliers, the imputed values of \emph{Bi} are having accumulation points
+throughout most of the variables. Especially when looking at the variables
+\emph{Al\_XRF, P\_XRF, Si\_XRF} and \emph{Ti\_XRF}. This could be an indicator
+that the variables are having an influence on the structure of the imputed
+values of \emph{Bi}, thus, the used imputation method has to be chosen with
+special consideration.
+
+\subsection{Customizing the graphic}
+Since the important adjustable parameters are the same as in the scatterplot
+matrix function, please refer to section~\ref{sec:Scattmatrix_custom} for a
+detailed explanation.
+
+However, when using the command line of \proglang{R} and it's desired to
+utilize the feature of embedding the graphic in a \emph{Tcl/Tk} window, the
+function call has to be changed from \emph{parcoordMiss} to
+\textbf{TKRparcoordMiss}.
+
+\subsection{Interactive features}
+Like the previous method, this method again supports the interactive selection
+of the variables, that should be used for highlighting. A particular variable
+is added to the selection, by clicking on the respective coordinate axis in the
+plot. If the variable was already selected, it is removed instead. Clicking
+anywhere else on the graphic device quits the interactive session.
+\\\\
+Interactivity is always active by default. However, when using the command line
+of \proglang{R}  it can be disabled by setting the parameter \emph{interactive}
+to \code{FALSE}.
+
+
+\section{Matrix plot}
+The matrix plot is a very useful multivariate plot, it helps to detect
+multivariate dependencies and patterns, but it's also possible to find outliers
+in the data set with this function. Each cell of the data matrix is visualized
+by a rectangle. Observed values are colored according to a gray scale, whereas
+missing or imputed values are highlighted by a clearly distinguishable color.
+To determine the gray level of observed values, the variables are scaled to the
+interval [0,1], small values are colored in light gray and high values with
+dark grey. Supplementary, the data matrix can be sorted by the magnitude of a
+particular variable. The currently selected variable is then printed out in the
+\proglang{R} console.
+\\\\
+Similar to the aggregation method of section~\ref{sec:Aggregation}, variables
+containing missing and variable with imputed values can be combined in this
+graphic. Missings are colored \textbf{red}, whereas imputed values are
+highlighted with an \textbf{orange} color. 
+
+It can be produced by first selecting the variables of interest in the
+\emph{Select Variables} dialog. Afterwards, the graphic is displayed by
+clicking on \texttt{Diagnostics $\rightarrow$ Matrix Plot}.
+\\\\
+Figure~\ref{fig:matrix_sleep} shows an example of a matrix plot of the entire
+data set \emph{sleep}, which is imputed completely. The variable \emph{Span} is
+used for the sorting of the data matrix.
+
+If the command line of  \proglang{R} is preferred, the same plot can be created
+with following command:
+
+<<Matrixplot_tao_imp, results=hide, eval=FALSE>>=
+matrixplot(sleep_kNN, delimiter="_imp", sortby="Span")
+@
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=1\textwidth]{fig-matrix-sleep.pdf}
+\caption{Matrix plot of the complete imputed \emph{sleep} data set}
+\label{fig:matrix_sleep}
+\end{center}
+\end{figure}
+
+\noindent By looking at Figure~\ref{fig:matrix_sleep}, one can see that there
+is one clear outlier in variables \emph{BodyWgt}, \emph{BrainWgt} and
+\emph{Span}. Which can be seen on the fact, that there is almost no color
+gradient in these variables, instead, there are many white and light gray
+colored rectangles and one black rectangle. Since the graphic is sorted by the
+values of the variable \emph{Span}, it reveals, that there are accumulation
+points of imputed values in \emph{NonD} and \emph{Dream} in a certain value
+interval of \emph{Span}.
+
+\subsection{Customizing the graphic}
+The matrix plot isn't as customizable as some of the other graphical methods of
+the package \pkg{VIM}. However, there are still some important adjustable
+parameters, which will be explained subsequently.
+\\\\
+\underline{\emph{col}}\\
+Instead of a gray scale, colors of the \code{RGB} or \code{HCL} colorspace can
+be supplied for observed values of the data matrix. RGB colors can be given as
+string, or as objects of class \code{RGB}. HCL colors can only be specified as
+objects of class \code{polarLUV}.
+\\\\
+\underline{\emph{Tcl/Tk} window}\\
+Like the previous multivariate methods, this method also supports the embedment 
+of the graphic in a \emph{Tcl/Tk} window. This is helpful if there is a large
+number of variables, because scrollbars are added to move from one part of the
+plot to another.
+\\\\
+To enable this option in the GUI, one has to go to \texttt{Options
+$\rightarrow$ Preferences} and tick the checkbox \emph{Embed multivariate plots
+in Tcl/Tk} in the \emph{Miscellaneous}-section
+
+When using the command line of \proglang{R}, the function call has to be
+changed from \emph{matrixplot} to \textbf{TKRmatrixplot}.
+
+\subsection{Interactive features}
+The data matrix of this plot can be sorted by a particular variable
+interactively. To select the variable that should be used, one has to click on
+the column of the certain variable in the graphic. Clicking anywhere else on
+the graphic device quits the interactive session.
+\\\\
+Interactivity is always active by default. However, when using the command line
+of \proglang{R}  it can be disabled by setting the parameter \emph{interactive}
+to \code{FALSE}.
+
+
+\section{Mosaic plot with imputed missings}
+The mosaic plot is a graphical representation of multi-way contingency tables,
+therefore it's mainly intended for categorial variables. The frequencies of the
+different cells are visualized by area-proportional rectangles (tiles). For
+constructing a mosaic plot, a rectangle is first split vertically at positions
+corresponding to the relative frequencies of the categories of a corresponding
+variable. Then the resulting smaller rectangles are again subdivided according
+to the conditional probabilities of a second variable. This can be continued
+for further variables accordingly. Additionally, imputed values in certain
+variables are highlighted in order to explore their structure.
+\citep{Templ12}
+
+It can be produced by first selecting the variables that should be plotted in
+the \emph{Select Variables} dialog and the variable(s), which should be used
+for highlighting, in the \emph{Highlight Variables in Plots} dialog. After
+choosing, whether imputed values in \emph{any} or \emph{all} of the additional
+variables should be highlighted in the \emph{Selection for Highlighting}
+dialog, the graphic is displayed by clicking on \texttt{Diagnostics
+$\rightarrow$ Mosaic Plot with imputed Missings}.
+\\\\
+Figure~\ref{fig:mosaic_sleep} shows an example of a mosaic plot of the
+variables \emph{Pred} and \emph{Exp} of the data set \emph{sleep}. Imputed
+values of \emph{NonD} are highlighted.  
+
+If the command line of  \proglang{R} is preferred, the same plot can be created
+with following command:
+
+<<Mosaic_sleep_imp, results=hide, eval=FALSE>>=
+mosaicMiss(sleep_kNN, highlight=3, plotvars=8:10, delimiter="_imp", miss.labels=FALSE)
+@
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{fig-mosaic-sleep.pdf}
+\caption[Mosaic plot of the \emph{sleep} data set]{Mosaic plot of the variables
+ \emph{Pred} and \emph{Exp} of the \emph{sleep} data set, imputed values in
+ \emph{NonD} are highlighted}
+\label{fig:mosaic_sleep}
+\end{center}
+\end{figure}
+
+\noindent The example in Figure~\ref{fig:mosaic_sleep} shows, that most of the
+values occur if the values of the variables are both in the category 1 or in
+category 5. Also, many values in this categories are imputed values in the
+variable \emph{NonD}. This also applies to values, which are in category 3 in
+the variable \emph{Pred} and 5 in \emph{Exp} respectively. The values, which
+are of category 1 in \emph{Pred} and 4 in \emph{Exp} are all imputed values in
+\emph{NonD}. Category 1 is dominant in \emph{Exp}, whereas the same can be said
+about category 2 of the variable \emph{Pred}.
+
+\subsection{Customizing the graphic}
+In terms of customization, the mosaic plot is very similar to the scatterplot
+matrix method of section~\ref{sec:Scattmatrix}, except of the parameter
+\emph{alpha}, which isn't available. Thus, please refer to
+section~\ref{sec:Scattmatrix_highlight} for a detailed explanation of the
+adjustable parameters.
+
+
+\section{Map of imputed missings}\label{sec:mapMiss}
+It may occur, that the structure, because of which the imputed values have been
+missing is affected by spatial patterns. The \emph{map of imputed missings}
+method is developed to explore this matter. It plots variables in a given map
+and highlights imputed values. Therefore, the x- and y-coordinates, which
+indicate the point of each value on the map, have to be supplied.
+\\\\
+This method is focused on the coordinates, hence it only indicates that there
+are observations at certain points of the map and highlights imputed values.
+The graphic will be the same for different imputation methods. Still it
+provides valuable information about the structure of the values, which have
+been missing.
+
+The graphic can be produced by first selecting the background map in the
+\emph{Select Background Map} dialog, which can be opened by clicking on
+\texttt{Data $\rightarrow$ Background Map}. In addition, the variables which
+represent the x- and y-coordinates have to be defined in the \emph{Select
+Coordinates} section of this dialog. After selecting the variables that should
+be used for the plot in the \emph{Select Variables} dialog and choosing,
+whether imputed values in \emph{any} or \emph{all} of the variables should be
+highlighted in the \emph{Selection for Highlighting} dialog, the graphic is
+displayed by clicking on \texttt{Diagnostics $\rightarrow$ Map of imputed
+Missings}.
+\\\\
+Figure~\ref{fig:mapmiss_chorizon} shows an example of a map of imputed
+missings. The variables \emph{As}, \emph{Bi} and \emph{Ca} of the data set
+\emph{chorizonDL} are plotted on the \emph{kola.background}-map (which is also
+included in the package \pkg{VIM}), whereas imputed values in \emph{any} of the
+variables are highlighted. The map is linked to the data by the variables
+\emph{XCOO} and \emph{YCOO}. 
+
+If the command line of  \proglang{R} is preferred, the same plot can be created
+with following commands:
+
+<<Mapmiss_chorizon_imp, results=hide, eval=FALSE>>=
+vars <- c("As","Bi","Ca","As_imp","Bi_imp")
+coo <- chorizon_kNN[, c("XCOO", "YCOO")]
+mapMiss(chorizon_kNN[,vars], coo, map=kola.background, delimiter="_imp", alpha=0.6)
+@
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.85\textwidth]{fig-mapmiss-chorizon.pdf}
+\caption[Map of imputed missings of the \emph{chorizonDL} data set]{Map of
+imputed missings of the variables \emph{As}, \emph{Bi} and \emph{Ca} of the
+\emph{chorizonDL} data set, plotted on the \emph{kola.background}-map. Imputed
+values in any of the variables are highlighted.}
+\label{fig:mapmiss_chorizon}
+\end{center}
+\end{figure}
+
+\noindent The highlighted imputed values of the variables \emph{As}, \emph{Bi}
+or \emph{Ca} of Figure~\ref{fig:mapmiss_chorizon} reveal, that there is a
+regional dependency. This indicates, that the distribution of the missing
+values was not missing completely at random. Therefore, the imputation method
+has to be chosen with special consideration. Note, that the chosen
+\emph{selection} method, which is \emph{any} in this example, can be seen in
+the legend in the top right corner of the graphic. 
+
+\subsection{Customizing the graphic}\label{sec:mapMiss_custom}
+This graphic can also customized, like most of the methods, when using the
+command line of \proglang{R}. Subsequently, two important parameters are
+explained:
+\\\\
+\underline{\emph{alpha}}\\
+The \emph{alpha} parameter controls the level of transparency. It's a numeric
+value between 0 and 1 and helps to prevent overplotting of the points in the
+plot. Supplementary, it can be set to \code{NULL}, which disables transparency
+and is equivalent to setting it to 1.
+
+In the GUI, it can be changed in the \texttt{Options $\rightarrow$ Preferences}
+menu by changing the slider in the \emph{Set Alpha Value}-Section.
+\\\\
+\underline{\emph{selection}}\\
+By altering the \emph{selection}, one can choose to highlight values, which
+are imputed in \emph{any} or in \emph{all} of the variables.
+
+\subsection{Interactive features}
+This method again supports interactive features. Clicking on any point in the
+graphic prints information about the values it's having in the supplied
+variables in the \proglang{R} console. This is intended to further analyze the
+structure of the values. Clicking in a region that does not contain any points
+quits the interactive session.
+
+
+\section{Growing dot map with imputed missings}
+Like the \emph{map of imputed missing} function of the previous chapter (see
+section~\ref{sec:mapMiss}), this method is also developed to analyze
+geographical data. However, the values of the variable of interest are
+represented by growing dots instead of normal points in this function. Imputed
+values are highlighted again.
+
+This graphical method is intended to reveal relationships of the imputed values
+to both their spatial location and also of the values of the variable of
+interest. The imputed values are distinguished by their occurrence in the
+supplied variables. Imputed values of the variable of interest are represented
+by a \emph{dark blue} rectangle. Values, which are imputed in both, the
+variable of interest and \emph{any} or \emph{all} (depending on the
+\emph{selection}) of the additional variables are plotted as a \emph{dark
+orange} rectangle. Last but not least, the growing dot representations of
+values of the variable of interest are colored \emph{orange} for values, which
+are imputed in the additional variables only.
+\\\\
+The graphic can be produced by first selecting the background map in the
+\emph{Select Background Map} dialog, which can be opened by clicking on
+\texttt{Data $\rightarrow$ Background Map}. In addition, the variables for the
+x- and y-coordinate have to be defined in the \emph{Select Coordinates} section
+of this dialog. Subsequently, the variable that should be used for the growing
+dots need to be selected in the \emph{Select Variables} dialog and the
+variable(s), which should be used for highlighting, in the \emph{Highlight
+Variables in Plots} dialog. After choosing, whether imputed values in
+\emph{any} or \emph{all} of the variables should be highlighted in the
+\emph{Selection for Highlighting} dialog, the graphic is displayed by clicking
+on \texttt{Diagnostics $\rightarrow$ Growing Dot Map with imputed Missings}.
+\\\\
+Figure~\ref{fig:growdot_chorizon_Ca} shows an example of a map with growing
+dots. The variable \emph{Ca} of the data set \emph{chorizonDL} is plotted on
+the \emph{kola.background}-map, whereas imputed values in the variables
+\emph{As} and \emph{Bi} highlighted. Again, the map is linked to the data by
+the variables \emph{XCOO} or \emph{YCOO}.
+
+If the command line of  \proglang{R} is preferred, the same plot can be
+created with following commands:
+
+<<Growdot_chorizon_imp, results=hide, eval=FALSE>>=
+vars <- c("Ca","As","Bi","As_imp","Bi_imp")
+coo <- chorizon_kNN[, c("XCOO", "YCOO")]
+growdotMiss(chorizon_kNN[,vars], coo, kola.background, delimiter="_imp", alpha=0.6)
+@
+
+\begin{figure}[ht!]
+\begin{center}
+\includegraphics[width=0.85\textwidth]{fig-growdot-chorizon_Ca.pdf}
+\caption{Growing dot map of the variable \emph{Ca} of the \emph{chorizonDL}
+data set, plotted on the \emph{kola.background}-map. Imputed values in
+\emph{As} or \emph{Bi} are highlighted.}
+\label{fig:growdot_chorizon_Ca}
+\end{center}
+\end{figure}
+
+\noindent The example of Figure~\ref{fig:growdot_chorizon_Ca} gives similar
+results to the graphic of Figure~\ref{fig:mapmiss_chorizon}, a regional
+dependency is existing. However, the growing dot representation of the values
+of \emph{Ca} shows, that there is no relationship between the values of this
+variable and the imputed values in the others.
+
+\subsection{Customizing the graphic}
+Since the important adjustable parameters are the same as in the map of imputed
+missing function, please refer to section~\ref{sec:mapMiss_custom} for a
+detailed explanation.
+
+\subsection{Interactive features}
+This method also supports interactive features. Clicking on any point in the
+graphic prints information about the values it's having in the supplied
+variables in the \proglang{R} console. This is intended to further analyze the
+structure of the distribution of the values. Clicking in a region that does not
+contain any points quits the interactive session.
+
+\section{Conclusion}
+Package \pkg{VIM} offers various very interesting graphical methods to analyze
+the structure of missing and imputed values in a simple manner. By using this
+package, it's possible to reveal patterns and mechanisms of the missing values,
+as well as errors which happened in the imputation process. The interactive
+features of the implemented methods alleviate the information retrieval, by
+making it possible to quickly change between different variables in the data
+set or getting information about certain points in the plot. Additionally, a
+graphical user interface is provided for an easy handling of the included
+functions. Supplementary, \pkg{VIM} can be used to produce high-quality
+graphics for publications.
+
+
+\newpage
+\nocite{*}
+\bibliographystyle{plainnat}  
+\bibliography{VIM-Imputation}
+
+% \newpage
+% \begin{appendix}
+% \section{Help files of package \pkg{VIM}}
+% 
+% \input{VIM-package}
+% \input{aggr}
+% \input{alphablend}
+% \input{barMiss}
+% \input{bgmap}
+% \input{chorizonDL}
+% \input{colormapMiss}
+% \input{colSequence}
+% \input{count}
+% \input{growdotMiss}
+% \input{histMiss}
+% \input{hotdeck}
+% \input{initialise}
+% \input{irmi}
+% \input{kNN}
+% \input{kolabackground}
+% \input{mapMiss}
+% \input{marginmatrix}
+% \input{marginplot}
+% \input{matrixplot}
+% \input{mosaicMiss}
+% \input{pairsVIM}
+% \input{parcoordMiss}
+% \input{pbox}
+% \input{prepare}
+% \input{printaggr}
+% \input{printsummaryaggr}
+% \input{rugNA}
+% \input{SBS5242}
+% \input{scattJitt}
+% \input{scattmatrixMiss}
+% \input{scattMiss}
+% \input{sleep}
+% \input{spineMiss}
+% \input{summaryaggr}
+% \input{tao}
+% \input{vmGUImenu}
+% 
+% \end{appendix}
+
+\end{document}

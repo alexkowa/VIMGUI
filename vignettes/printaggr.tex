@@ -1,0 +1,38 @@
+\HeaderA{print.aggr}{Print method for objects of class aggr}{print.aggr}
+\keyword{print}{print.aggr}
+%
+\begin{Description}\relax
+Print method for objects of class \code{"aggr"}.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S3 method for class 'aggr'
+print(x, digits = NULL, ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] an object of class \code{"aggr"}.
+\item[\code{digits}] the minimum number of significant digits to be used (see 
+\code{\LinkA{print.default}{print.default}}).
+\item[\code{...}] further arguments (currently ignored).
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Author}\relax
+Matthias Templ, modifications by Andreas Alfons and Bernd Prantner
+\end{Author}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{aggr}{aggr}}
+\end{SeeAlso}
+%
+\begin{Examples}
+\begin{ExampleCode}
+data(sleep, package = "VIM")
+a <- aggr(sleep, plot=FALSE)
+a
+\end{ExampleCode}
+\end{Examples}

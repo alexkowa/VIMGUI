@@ -1,0 +1,46 @@
+\HeaderA{sleep}{Mammal sleep data}{sleep}
+\keyword{datasets}{sleep}
+%
+\begin{Description}\relax
+Sleep data with missing values.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+data(sleep)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Format}
+A data frame with 62 observations on the following 10 variables.
+\begin{description}
+
+\item[\code{BodyWgt}] a numeric vector
+\item[\code{BrainWgt}] a numeric vector
+\item[\code{NonD}] a numeric vector
+\item[\code{Dream}] a numeric vector
+\item[\code{Sleep}] a numeric vector
+\item[\code{Span}] a numeric vector
+\item[\code{Gest}] a numeric vector
+\item[\code{Pred}] a numeric vector
+\item[\code{Exp}] a numeric vector
+\item[\code{Danger}] a numeric vector
+
+\end{description}
+
+\end{Format}
+%
+\begin{Source}\relax
+Allison, T. and Chichetti, D. (1976) Sleep in mammals: ecological and 
+constitutional correlates. \emph{Science} \bold{194 (4266)}, 732--734.
+
+The data set was imported from \code{GGobi}.
+\end{Source}
+%
+\begin{Examples}
+\begin{ExampleCode}
+data(sleep, package = "VIM")
+summary(sleep)
+aggr(sleep)
+\end{ExampleCode}
+\end{Examples}

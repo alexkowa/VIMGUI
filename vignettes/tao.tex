@@ -1,0 +1,46 @@
+\HeaderA{tao}{Tropical Atmosphere Ocean (TAO) project data}{tao}
+\keyword{datasets}{tao}
+%
+\begin{Description}\relax
+A small subsample of the Tropical Atmosphere Ocean (TAO) project data, 
+derived from the \code{GGOBI} project.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+data(tao)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Format}
+A data frame with 736 observations on the following 8 variables.
+\begin{description}
+
+\item[\code{Year}] a numeric vector
+\item[\code{Latitude}] a numeric vector
+\item[\code{Longitude}] a numeric vector
+\item[\code{Sea.Surface.Temp}] a numeric vector
+\item[\code{Air.Temp}] a numeric vector
+\item[\code{Humidity}] a numeric vector
+\item[\code{UWind}] a numeric vector
+\item[\code{VWind}] a numeric vector
+
+\end{description}
+
+\end{Format}
+%
+\begin{Details}\relax
+All cases recorded for five locations and two time periods.
+\end{Details}
+%
+\begin{Source}\relax
+\url{http://www.pmel.noaa.gov/tao/}
+\end{Source}
+%
+\begin{Examples}
+\begin{ExampleCode}
+data(tao, package = "VIM")
+summary(tao)
+aggr(tao)
+\end{ExampleCode}
+\end{Examples}

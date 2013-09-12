@@ -1,0 +1,137 @@
+\HeaderA{matrixplot}{Matrix plot}{matrixplot}
+\aliasA{iimagMiss}{matrixplot}{iimagMiss}
+\aliasA{TKRmatrixplot}{matrixplot}{TKRmatrixplot}
+\keyword{hplot}{matrixplot}
+%
+\begin{Description}\relax
+Create a matrix plot, in which all cells of a data matrix are visualized by 
+rectangles.  Available data is coded according to a continuous color scheme, 
+while missing/imputed data is visualized by a clearly distinguishable color.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+matrixplot(x, delimiter = NULL, sortby = NULL, col = c("red","orange"),
+    gamma = 2.2, fixup = TRUE, xlim = NULL, ylim = NULL, main = NULL,
+    sub = NULL, xlab = NULL, ylab = NULL, axes = TRUE, labels = axes,
+    xpd = NULL, interactive = TRUE, ...)
+
+TKRmatrixplot(x, ..., delimiter = NULL, hscale = NULL, vscale = NULL,
+    TKRpar = list())
+
+iimagMiss(x, delimiter = NULL, sortby = NULL, col = c("red","orange"),
+    main = NULL, sub = NULL, xlab = NULL, ylab = NULL, xlim = NULL,
+    ylim = NULL, axes = TRUE, xaxlabels = NULL, las = 3,
+    interactive = TRUE, ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] a matrix or \code{data.frame}.
+\item[\code{delimiter}] a character-vector to distinguish between variables
+and imputation-indices for imputed variables (therefore, \code{x} needs
+to have \code{\LinkA{colnames}{colnames}}). If given, it is used to determine the
+corresponding imputation-index for any imputed variable (a logical-vector
+indicating which values of the variable have been imputed). If such
+imputation-indices are found, they are used for highlighting and the
+colors are adjusted	according to the given colors for imputed variables
+(see \code{col}).
+\item[\code{sortby}] a numeric or character value specifying the variable to sort 
+the data matrix by, or \code{NULL} to plot without sorting.
+\item[\code{col}] the colors to be used in the plot.  RGB colors may be specified as 
+character strings or as objects of class 
+"\code{\LinkA{RGB}{RGB}}".  HCL colors need to be specified as 
+objects of class "\code{\LinkA{polarLUV}{polarLUV}}".  If only 
+one color is supplied, it is used for missing and imputed data and a greyscale is used 
+for available data. If two colors are supplied, the first is used for missing and
+the second for imputed data and a greyscale for available data.
+If three colors are supplied, the first is used as end 
+color for the available data, while the start color is taken to be 
+transparent for RGB or white for HCL.  Missing/imputed data is visualized by the 
+second/third color in this case.  If four colors are supplied, the first is used 
+as start color and the second as end color for the available data, while 
+the third/fourth color is used for missing/imputed data.
+\item[\code{gamma}] numeric; the display \emph{gamma} value (see 
+\code{\LinkA{hex}{hex}}).
+\item[\code{fixup}] a logical indicating whether the colors should be corrected to 
+valid RGB values (see \code{\LinkA{hex}{hex}}).
+\item[\code{xlim, ylim}] axis limits.
+\item[\code{main, sub}] main and sub title.
+\item[\code{xlab, ylab}] axis labels.
+\item[\code{axes}] a logical indicating whether axes should be drawn on the plot.
+\item[\code{labels}] either a logical indicating whether labels should be plotted 
+below each column, or a character vector giving the labels.
+\item[\code{xpd}] a logical indicating whether the rectangles should be allowed to 
+go outside the plot region.  If \code{NULL}, it defaults to \code{TRUE} 
+unless axis limits are specified.
+\item[\code{interactive}] a logical indicating whether a variable to be used for 
+sorting can be selected interactively (see `Details').
+\item[\code{xaxlabels}] a character vector containing the labels for the columns.  
+If \code{NULL}, the column names of \code{x} will be used.
+\item[\code{las}] the style of axis labels (see \code{\LinkA{par}{par}}).
+\item[\code{...}] for \code{matrixplot} and \code{iimagMiss}, further graphical 
+parameters to be passed to \code{\LinkA{plot.window}{plot.window}}, 
+\code{\LinkA{title}{title}} and \code{\LinkA{axis}{axis}}.  For 
+\code{TKRmatrixplot}, further arguments to be passed to \code{matrixplot}.
+\item[\code{hscale}] horizontal scale factor for plot to be embedded in a 
+\emph{Tcl/Tk} window (see `Details').  The default value depends on 
+the number of variables.
+\item[\code{vscale}] vertical scale factor for the plot to be embedded in a 
+\emph{Tcl/Tk} window (see `Details').  The default value depends on 
+the number of observations.
+\item[\code{TKRpar}] a list of graphical parameters to be set for the plot to be 
+embedded in a \emph{Tcl/Tk} window (see `Details' and 
+\code{\LinkA{par}{par}}).
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+In a \emph{matrix plot}, all cells of a data matrix are visualized by 
+rectangles.  Available data is coded according to a continuous color scheme.  
+To compute the colors via interpolation, the variables are first scaled to 
+the interval \eqn{$[0,1]$}{}. Missing/imputed values can then be visualized by a 
+clearly distinguishable color. It is thereby possible to use colors in the
+\emph{HCL} or \emph{RGB} color space. A simple way of visualizing the 
+magnitude of the available data is to apply a greyscale, which has the 
+advantage that missing/imputed values can easily be distinguished by using a color 
+such as red/orange.  Note that \code{-Inf} and \code{Inf} are always assigned the 
+begin and end color, respectively, of the continuous color scheme.
+
+Additionally, the observations can be sorted by the magnitude of a selected 
+variable.  If \code{interactive} is \code{TRUE}, clicking in a column redraws 
+the plot with observations sorted by the corresponding variable.  Clicking 
+anywhere outside the plot region quits the interactive session.
+
+\code{TKRmatrixplot} behaves like \code{matrixplot}, but uses 
+\code{\LinkA{tkrplot}{tkrplot}} to embed the plot in a \emph{Tcl/Tk} window.  
+This is useful if the number of observations and/or variables is large, 
+because scrollbars allow to move from one part of the plot to another.
+\end{Details}
+%
+\begin{Note}\relax
+This is a much more powerful extension to the function  
+\code{imagmiss} in the former CRAN package \code{dprep}.
+
+\code{iimagMiss} is deprecated and may be omitted in future versions of 
+\code{VIM}.  Use \code{matrixplot} instead.
+\end{Note}
+%
+\begin{Author}\relax
+Andreas Alfons, Matthias Templ, modifications by Bernd Prantner
+\end{Author}
+%
+\begin{Examples}
+\begin{ExampleCode}
+data(sleep, package = "VIM")
+## for missing values
+x <- sleep[, -(8:10)]
+x[,c(1,2,4,6,7)] <- log10(x[,c(1,2,4,6,7)])
+matrixplot(x, sortby = "BrainWgt")
+
+## for imputed values
+x_imp <- kNN(sleep[, -(8:10)])
+x_imp[,c(1,2,4,6,7)] <- log10(x_imp[,c(1,2,4,6,7)])
+matrixplot(x_imp, delimiter = "_imp", sortby = "BrainWgt")
+\end{ExampleCode}
+\end{Examples}

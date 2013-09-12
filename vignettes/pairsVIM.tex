@@ -1,0 +1,86 @@
+\HeaderA{pairsVIM}{Scatterplot Matrices}{pairsVIM}
+\keyword{hplot}{pairsVIM}
+%
+\begin{Description}\relax
+Create a scatterplot matrix.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+pairsVIM(x, ..., delimiter = NULL, main = NULL, sub = NULL,
+    panel = points, lower = panel, upper = panel, diagonal = NULL,
+    labels = TRUE, pos.labels = NULL, cex.labels = NULL,
+    font.labels = par("font"), layout = c("matrix","graph"), gap = 1)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] a matrix or \code{data.frame}.
+\item[\code{delimiter}] a character-vector to distinguish between variables
+and imputation-indices for imputed variables (therefore, \code{x} needs
+to have \code{\LinkA{colnames}{colnames}}). If given, it is used to determine the corresponding
+imputation-index for any imputed variable (a logical-vector indicating
+which values of the variable have been imputed). If such imputation-indices
+are found, they are used for highlighting and the colors are adjusted 
+according to the given colors for imputed variables (see \code{col}).
+\item[\code{main, sub}] main and sub title.
+\item[\code{panel}] a \code{function(x, y, ...)}, which is used to plot
+the contents of each off-diagonal panel of the display.
+\item[\code{...}] further arguments and graphical parameters to be passed 
+down.  \code{par("oma")} will be set appropriately unless supplied 
+(see \code{\LinkA{par}{par}}).
+\item[\code{lower, upper}] separate panel functions to be used below and above 
+the diagonal, respectively.
+\item[\code{diagonal}] optional \code{function(x, ...)} to be
+applied on the diagonal panels.
+\item[\code{labels}] either a logical indicating whether labels should be 
+plotted in the diagonal panels, or a character vector giving 
+the labels.
+\item[\code{pos.labels}] the vertical position of the labels in the diagonal 
+panels.
+\item[\code{cex.labels}] the character expansion factor to be used for the 
+labels.
+\item[\code{font.labels}] the font to be used for the labels.
+\item[\code{layout}] a character string giving the layout of the scatterplot 
+matrix.  Possible values are \code{"matrix"} (a matrix-like layout 
+with the first row on top) and \code{"graph"} (a graph-like layout 
+with the first row at the bottom).
+\item[\code{gap}] a numeric value giving the distance between the panels in 
+margin lines.
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+This function is the workhorse for \code{\LinkA{marginmatrix}{marginmatrix}} and 
+\code{\LinkA{scattmatrixMiss}{scattmatrixMiss}}.
+
+The graphical parameter \code{oma} will be set unless supplied as an 
+argument.
+
+A panel function should not attempt to start a new plot, since the 
+coordinate system for each panel is set up by \code{pairsVIM}.
+\end{Details}
+%
+\begin{Note}\relax
+The code is based on \code{\LinkA{pairs}{pairs}}.  Starting with version 
+1.4, infinite values are no longer removed before passing the \code{x} and 
+\code{y} vectors to the panel functions.
+\end{Note}
+%
+\begin{Author}\relax
+Andreas Alfons, modifications by Bernd Prantner
+\end{Author}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{marginmatrix}{marginmatrix}}, \code{\LinkA{scattmatrixMiss}{scattmatrixMiss}}
+\end{SeeAlso}
+%
+\begin{Examples}
+\begin{ExampleCode}
+data(sleep, package = "VIM")
+x <- sleep[, -(8:10)]
+x[,c(1,2,4,6,7)] <- log10(x[,c(1,2,4,6,7)])
+pairsVIM(x)
+\end{ExampleCode}
+\end{Examples}

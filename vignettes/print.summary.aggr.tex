@@ -1,0 +1,36 @@
+\HeaderA{print.summary.aggr}{Print method for objects of class summary.aggr}{print.summary.aggr}
+\keyword{print}{print.summary.aggr}
+%
+\begin{Description}\relax
+Print method for objects of class \code{"summary.aggr"}.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S3 method for class 'summary.aggr'
+print(x, ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] an object of class \code{"summary.aggr"}.
+\item[\code{...}] further arguments (currently ignored).
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Author}\relax
+Andreas Alfons, modifications by Bernd Prantner
+\end{Author}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{summary.aggr}{summary.aggr}}, \code{\LinkA{aggr}{aggr}}
+\end{SeeAlso}
+%
+\begin{Examples}
+\begin{ExampleCode}
+data(sleep, package = "VIM")
+s <- summary(aggr(sleep, plot=FALSE))
+s
+\end{ExampleCode}
+\end{Examples}

@@ -1,0 +1,31 @@
+export(
+    TKRaggr,
+    TKRmarginmatrix,
+    TKRmatrixplot,
+    TKRparcoordMiss,
+    TKRpbox,
+    TKRscattmatrixMiss,
+    vmGUImenu,VIMGUI    
+)
+
+
+S3method(TKRmarginmatrix, data.frame)
+S3method(TKRmarginmatrix, survey.design)
+S3method(TKRmarginmatrix, default)
+
+S3method(TKRmatrixplot, data.frame)
+S3method(TKRmatrixplot, survey.design)
+S3method(TKRmatrixplot, default)
+
+S3method(TKRparcoordMiss, data.frame)
+S3method(TKRparcoordMiss, survey.design)
+S3method(TKRparcoordMiss, default)
+
+S3method(TKRpbox, data.frame)
+S3method(TKRpbox, survey.design)
+S3method(TKRpbox, default)
+
+S3method(TKRscattmatrixMiss, data.frame)
+S3method(TKRscattmatrixMiss, survey.design)
+S3method(TKRscattmatrixMiss, default)
+

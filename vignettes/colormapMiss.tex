@@ -1,0 +1,136 @@
+\HeaderA{colormapMiss}{Colored map with information about missing/imputed values}{colormapMiss}
+\aliasA{colormapMissLegend}{colormapMiss}{colormapMissLegend}
+\keyword{hplot}{colormapMiss}
+%
+\begin{Description}\relax
+Colored map in which the proportion or amount of missing/imputed values in each 
+region is coded according to a continuous or discrete color scheme.  The 
+sequential color palette may thereby be computed in the \emph{HCL} or the 
+\emph{RGB} color space.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+colormapMiss(x, region, map, imp_index = NULL, prop = TRUE,
+    polysRegion = 1:length(x), range = NULL, n = NULL, col = c("red",
+    "orange"), gamma = 2.2, fixup = TRUE, coords = NULL, numbers = TRUE,
+    digits = 2, cex.numbers = 0.8, col.numbers = par("fg"),
+    legend = TRUE, interactive = TRUE, ...)
+
+colormapMissLegend(xleft, ybottom, xright, ytop, cmap, n = 1000,
+    horizontal = TRUE, digits = 2, cex.numbers = 0.8,
+    col.numbers = par("fg"), ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] a numeric vector.
+\item[\code{region}] a vector or factor of the same length as \code{x} giving the 
+regions.
+\item[\code{map}] an object of any class that contains polygons and provides its own 
+plot method (e.g., \code{"SpatialPolygons"} from package \code{sp}).
+\item[\code{imp\_index}] a logical-vector indicating which values of `x' have
+been imputed. If given, it is used for highlighting and	the colors are
+adjusted according to the given colors for imputed variables (see \code{col}).
+\item[\code{prop}] a logical indicating whether the proportion of missing/imputed values 
+should be used rather than the total amount.
+\item[\code{polysRegion}] a numeric vector specifying the region that each polygon 
+belongs to.
+\item[\code{range}] a numeric vector of length two specifying the range (minimum and 
+maximum) of the proportion or amount of missing/imputed values to be used for the 
+color scheme.
+\item[\code{n}] for \code{colormapMiss}, the number of equally spaced cut-off points 
+for a discretized color scheme.  If this is not a positive integer, a 
+continuous color scheme is used (the default).  In the latter case, the 
+number of rectangles to be drawn in the legend can be specified in 
+\code{colormapMissLegend}.  A reasonably large number makes it appear 
+continuously.
+\item[\code{col}] the color range (start end end) to be used.  RGB colors may be 
+specified as character strings or as objects of class 
+"\code{\LinkA{RGB}{RGB}}".  HCL colors need to be specified as 
+objects of class "\code{\LinkA{polarLUV}{polarLUV}}".  If only 
+one color is supplied, it is used as end color, while the start color is 
+taken to be transparent for RGB or white for HCL.
+\item[\code{gamma}] numeric; the display \emph{gamma} value (see 
+\code{\LinkA{hex}{hex}}).
+\item[\code{fixup}] a logical indicating whether the colors should be corrected to 
+valid RGB values (see \code{\LinkA{hex}{hex}}).
+\item[\code{coords}] a matrix or \code{data.frame} with two columns giving the 
+coordinates for the labels.
+\item[\code{numbers}] a logical indicating whether the corresponding proportions or 
+numbers of missing/imputed values should be used as labels for the regions.
+\item[\code{digits}] the number of digits to be used in the labels (in case of 
+proportions).
+\item[\code{cex.numbers}] the character expansion factor to be used for the labels.
+\item[\code{col.numbers}] the color to be used for the labels.
+\item[\code{legend}] a logical indicating whether a legend should be plotted.
+\item[\code{interactive}] a logical indicating whether more detailed information 
+about missing/imputed values should be displayed interactively (see 
+`Details').
+\item[\code{xleft}] left \emph{x} position of the legend.
+\item[\code{ybottom}] bottom \emph{y} position of the legend.
+\item[\code{xright}] right \emph{x} position of the legend.
+\item[\code{ytop}] top \emph{y} position of the legend.
+\item[\code{cmap}] a list as returned by \code{colormapMiss} that contains the 
+required information for the legend.
+\item[\code{horizontal}] a logical indicating whether the legend should be drawn 
+horizontally or vertically.
+\item[\code{...}] further arguments to be passed to \code{plot}.
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+The proportion or amount of missing/imputed values in \code{x} of each region is 
+coded according to a continuous or discrete color scheme in the color range 
+defined by \code{col}.  In addition, the proportions or numbers can be shown 
+as labels in the regions.
+
+If \code{interactive} is \code{TRUE}, clicking in a region displays more 
+detailed information about missing/imputed values on the \R{} console.  Clicking 
+outside the borders quits the interactive session.
+\end{Details}
+%
+\begin{Value}
+\code{colormapMiss} returns a list with the following components:
+\begin{ldescription}
+\item[\code{nmiss}] a numeric vector containing the number of missing/imputed values in each 
+region.
+\item[\code{nobs}] a numeric vector containing the number of observations in each 
+region.
+\item[\code{pmiss}] a numeric vector containing the proportion of missing values in 
+each region.
+\item[\code{prop}] a logical indicating whether the proportion of missing/imputed values 
+have been used rather than the total amount.
+\item[\code{range}] the range of the proportion or amount of missing/imputed values 
+corresponding to the color range.
+\item[\code{n}] either a positive integer giving the number of equally spaced 
+cut-off points for a discretized color scheme, or \code{NULL} for a 
+continuous color scheme.
+\item[\code{start}] the start color of the color scheme.
+\item[\code{end}] the end color of the color scheme.
+\item[\code{space}] a character string giving the color space (either \code{"rgb"} 
+for RGB colors or \code{"hcl"} for HCL colors).
+\item[\code{gamma}] numeric; the display \emph{gamma} value (see 
+\code{\LinkA{hex}{hex}}).
+\item[\code{fixup}] a logical indicating whether the colors have been corrected to 
+valid RGB values (see \code{\LinkA{hex}{hex}}).
+\end{ldescription}
+\end{Value}
+%
+\begin{Note}\relax
+Some of the argument names and positions have changed with versions 1.3 and 
+1.4 due to extended functionality and for more consistency with other plot 
+functions in \code{VIM}.  For back compatibility, the arguments 
+\code{cex.text} and \code{col.text} can still be supplied to \code{...} and 
+are handled correctly.  Nevertheless, they are deprecated and no longer 
+documented.  Use \code{cex.numbers} and \code{col.numbers} instead.
+\end{Note}
+%
+\begin{Author}\relax
+Andreas Alfons, modifications by Bernd Prantner
+\end{Author}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{colSequence}{colSequence}}, \code{\LinkA{growdotMiss}{growdotMiss}}, \code{\LinkA{mapMiss}{mapMiss}}
+\end{SeeAlso}

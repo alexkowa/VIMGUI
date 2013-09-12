@@ -1,0 +1,92 @@
+\HeaderA{scattJitt}{Bivariate jitter plot}{scattJitt}
+\keyword{hplot}{scattJitt}
+%
+\begin{Description}\relax
+Create a bivariate jitter plot.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+scattJitt(x, delimiter = NULL, col = c("skyblue","red","red4","orange",
+    "orange4"), alpha = NULL, cex = par("cex"), col.line = "lightgrey",
+    lty = "dashed", lwd = par("lwd"), numbers = TRUE,
+    cex.numbers = par("cex"), main = NULL, sub = NULL, xlab = NULL,
+    ylab = NULL, axes = TRUE, frame.plot = axes,
+    labels = c("observed","missing","imputed"), ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] a \code{data.frame} or \code{matrix} with two columns.
+\item[\code{delimiter}] a character-vector to distinguish between variables
+and imputation-indices for imputed variables (therefore, \code{x} needs
+to have \code{\LinkA{colnames}{colnames}}). If given, it is used to determine the
+corresponding imputation-index for any imputed variable (a logical-vector
+indicating which values of the variable have been imputed). If such
+imputation-indices are found, they are used for highlighting and the
+colors are adjusted	according to the given colors for imputed variables
+(see \code{col}).
+\item[\code{col}] a vector of length five giving the colors to be used in the 
+plot.  The first color will be used for complete observations, the 
+second/fourth color for missing/imputed values in only one variable,
+and the third/fifth color for missing/imputed values in both variables.
+If only one color is supplied, it is used for all.
+Else if two colors are supplied, the second one is recycled.
+\item[\code{alpha}] a numeric value between 0 and 1 giving the level of 
+transparency of the colors, or \code{NULL}.  This can be used to
+prevent overplotting.
+\item[\code{cex}] the character expansion factor for the plot characters.
+\item[\code{col.line}] the color for the lines dividing the plot region.
+\item[\code{lty}] the line type for the lines dividing the plot region (see 
+\code{\LinkA{par}{par}}).
+\item[\code{lwd}] the line width for the lines dividing the plot region.
+\item[\code{numbers}] a logical indicating whether the frequencies of 
+observed and missing/imputed values should be displayed
+(see `Details').
+\item[\code{cex.numbers}] the character expansion factor to be used for the 
+frequencies of the observed and missing/imputed values.
+\item[\code{main, sub}] main and sub title.
+\item[\code{xlab, ylab}] axis labels.
+\item[\code{axes}] a logical indicating whether both axes should be drawn 
+on the plot.  Use graphical parameter \code{"xaxt"} or \code{"yaxt"} 
+to suppress just one of the axes.
+\item[\code{frame.plot}] a logical indicating whether a box should be drawn 
+around the plot.
+\item[\code{labels}] a vector of length three giving the axis labels for the 
+regions for observed, missing and imputed values (see `Details').
+\item[\code{...}] further graphical parameters to be passed down (see 
+\code{\LinkA{par}{par}}).
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+The amount of observed and missing/imputed values is visualized by jittered points.  
+Thereby the plot region is divided into up to four regions according to 
+the existence of missing/imputed values in one or both variables.  In addition, 
+the amount of observed and missing/imputed values can be represented by a number.
+\end{Details}
+%
+\begin{Note}\relax
+Some of the argument names and positions have changed with version 1.3 
+due to extended functionality and for more consistency with other plot 
+functions in \code{VIM}.  For back compatibility, the argument 
+\code{cex.text} can still be supplied to \code{...} and is handled 
+correctly.  Nevertheless, it is deprecated and no longer documented.  
+Use \code{cex.numbers} instead.
+\end{Note}
+%
+\begin{Author}\relax
+Matthias Templ, modifications by Andreas Alfons and Bernd Prantner
+\end{Author}
+%
+\begin{Examples}
+\begin{ExampleCode}
+data(tao, package = "VIM")
+## for missing values
+scattJitt(tao[, c("Air.Temp", "Humidity")])
+
+## for imputed values
+scattJitt(kNN(tao[, c("Air.Temp", "Humidity")]), delimiter = "_imp")
+\end{ExampleCode}
+\end{Examples}

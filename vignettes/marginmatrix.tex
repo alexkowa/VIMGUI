@@ -1,0 +1,95 @@
+\HeaderA{marginmatrix}{Marginplot Matrix}{marginmatrix}
+\aliasA{TKRmarginmatrix}{marginmatrix}{TKRmarginmatrix}
+\keyword{hplot}{marginmatrix}
+%
+\begin{Description}\relax
+Create a scatterplot matrix with information about missing/imputed values 
+in the plot margins of each panel.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+marginmatrix(x, delimiter = NULL, col = c("skyblue","red","red4",
+    "orange","orange4"), alpha = NULL, ...)
+
+TKRmarginmatrix(x, delimiter = NULL, col = c("skyblue","red","red4",
+    "orange","orange4"), alpha = NULL, ..., hscale = NULL,
+    vscale = NULL, TKRpar = list())
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] a matrix or \code{data.frame}.
+\item[\code{delimiter}] a character-vector to distinguish between variables
+and imputation-indices for imputed variables (therefore, \code{x} needs
+to have \code{\LinkA{colnames}{colnames}}). If given, it is used to determine the corresponding
+imputation-index for any imputed variable (a logical-vector indicating
+which values of the variable have been imputed). If such imputation-indices
+are found, they are used for highlighting and the colors are adjusted 
+according to the given colors for imputed variables (see \code{col}).
+\item[\code{col}] a vector of length five giving the colors to be used in the 
+marginplots in the off-diagonal panels.  The first color is used for 
+the scatterplot and the boxplots for the available data, the second/fourth 
+color for the univariate scatterplots and boxplots for the missing/imputed 
+values in one variable, and the third/fifth color for the frequency of 
+missing/imputed values in both variables (see `Details').  If only 
+one color is supplied, it is used for the bivariate and univariate 
+scatterplots and the boxplots for missing/imputed values in one variable, 
+whereas the boxplots for the available data are transparent.  Else 
+if two colors are supplied, the second one is recycled.
+\item[\code{alpha}] a numeric value between 0 and 1 giving the level of 
+transparency of the colors, or \code{NULL}.  This can be used to
+prevent overplotting.
+\item[\code{...}] further arguments and graphical parameters to be 
+passed to \code{\LinkA{pairsVIM}{pairsVIM}} and \code{\LinkA{marginplot}{marginplot}}.  
+\code{par("oma")} will be set appropriately unless supplied 
+(see \code{\LinkA{par}{par}}).
+\item[\code{hscale}] horizontal scale factor for plot to be embedded in a 
+\emph{Tcl/Tk} window (see `Details').  The default value 
+depends on the number of variables.
+\item[\code{vscale}] vertical scale factor for the plot to be embedded in a 
+\emph{Tcl/Tk} window (see `Details').  The default value 
+depends on the number of variables.
+\item[\code{TKRpar}] a list of graphical parameters to be set for the plot 
+to be embedded in a \emph{Tcl/Tk} window (see `Details' and 
+\code{\LinkA{par}{par}}).
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+\code{marginmatrix} uses \code{\LinkA{pairsVIM}{pairsVIM}} with a panel function 
+based on \code{\LinkA{marginplot}{marginplot}}.
+
+The graphical parameter \code{oma} will be set unless supplied as an 
+argument.
+
+\code{TKRmarginmatrix} behaves like \code{marginmatrix}, but uses 
+\code{\LinkA{tkrplot}{tkrplot}} to embed the plot in a \emph{Tcl/Tk} 
+window.  This is useful if the number of variables is large, because 
+scrollbars allow to move from one part of the plot to another.
+\end{Details}
+%
+\begin{Author}\relax
+Andreas Alfons, modifications by Bernd Prantner
+\end{Author}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{marginplot}{marginplot}}, \code{\LinkA{pairsVIM}{pairsVIM}}, 
+\code{\LinkA{scattmatrixMiss}{scattmatrixMiss}}
+\end{SeeAlso}
+%
+\begin{Examples}
+\begin{ExampleCode}
+data(sleep, package = "VIM")
+## for missing values
+x <- sleep[, 1:5]
+x[,c(1,2,4)] <- log10(x[,c(1,2,4)])
+marginmatrix(x)
+
+## for imputed values
+x_imp <- kNN(sleep[, 1:5])
+x_imp[,c(1,2,4)] <- log10(x_imp[,c(1,2,4)])
+marginmatrix(x_imp, delimiter = "_imp")
+\end{ExampleCode}
+\end{Examples}

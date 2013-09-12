@@ -1,0 +1,41 @@
+\HeaderA{bgmap}{Backgound map}{bgmap}
+\keyword{hplot}{bgmap}
+%
+\begin{Description}\relax
+Plot a background map.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+bgmap(map, add=FALSE, ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{map}] either a matrix or \code{data.frame} with two columns, 
+a list with components \code{x} and \code{y}, or an object of any 
+class that can be used for maps and provides its own plot method 
+(e.g., \code{"SpatialPolygons"} from package \code{sp}).  A list of 
+the previously mentioned types can also be provided.
+\item[\code{add}] a logical indicating whether \code{map} should be 
+added to an already existing plot (the default is \code{FALSE}).
+\item[\code{...}] further arguments and graphical parameters to be passed 
+to \code{plot} and/or \code{\LinkA{lines}{lines}}.
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Author}\relax
+Andreas Alfons
+\end{Author}
+%
+\begin{SeeAlso}\relax
+\code{\LinkA{growdotMiss}{growdotMiss}}, \code{\LinkA{mapMiss}{mapMiss}}
+\end{SeeAlso}
+%
+\begin{Examples}
+\begin{ExampleCode}
+data(kola.background, package = "VIM")
+bgmap(kola.background)
+\end{ExampleCode}
+\end{Examples}

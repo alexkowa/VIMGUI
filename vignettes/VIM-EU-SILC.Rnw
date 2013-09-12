@@ -1,0 +1,496 @@
+%\VignetteIndexEntry{An application of VIM to EU-SILC data}
+\documentclass[a4paper]{article}
+\usepackage[OT1]{fontenc}
+\usepackage{Sweave}
+\let\code=\texttt
+\let\proglang=\textsf\let\code=\texttt
+\let\proglang=\textsf\let\code=\texttt
+\let\proglang=\textsf
+\newcommand{\pkg}[1]{{\normalfont\fontseries{b}\selectfont #1}}
+\newcommand{\email}[1]{\href{mailto:#1}{\normalfont\texttt{#1}}}
+\newcommand{\doi}[1]{\href{http://dx.doi.org/#1}{\normalfont\texttt{doi:#1}}}
+\usepackage[T1]{fontenc}
+\usepackage[ansinew]{inputenc}
+\usepackage[british]{babel}
+\usepackage{a4}
+\usepackage{amssymb,ae}
+\usepackage[intlimits,sumlimits]{amsmath}
+\usepackage{color,xcolor,boxedminipage}
+\usepackage{hhline}
+\usepackage{multirow}
+\usepackage{latexsym,listings,float}
+\usepackage{natbib}
+\usepackage{pgf}
+\usepackage{url}
+%\usepackage{natbib}
+\usepackage{pifont} 
+\newcommand{\tick}{\ding{52}}
+\usepackage{pdfpages}
+
+\definecolor{darkred}{rgb}{0.545,0,0} 
+\definecolor{midnightblue}{rgb}{0.098,0.098,0.439} 
+
+
+%\usepackage[pdftex]{hyperref}
+\usepackage{hyperref}
+\hypersetup{ 
+    colorlinks, 
+    citecolor=blue,
+    linkcolor=blue,  
+    urlcolor=blue
+} 
+%\usepackage[pdftex]{color, graphicx}
+\usepackage{graphicx}
+
+\begin{document}
+
+\title{An application of \pkg{VIM}, the \proglang{R} package for visualization of missing values, to EU-SILC data}
+\author{Matthias Templ and Andreas Alfons}
+\date{August, 2009}
+
+\maketitle
+
+\abstract{
+Package \pkg{VIM} allows to explore and to analyze the structure of missing 
+values in data, as well as to produce high-quality graphics for publications. 
+This paper illustrates an application of \pkg{VIM} to a highly complex data 
+set -- the European Statistics on Income and Living Conditions (EU-SILC).
+}
+
+\section{The graphical user interface of \pkg{VIM}}
+
+The graphical user interface (GUI) has been developed using the \proglang{R} 
+package \pkg{tcltk} \citep{RDev} and allows easy handling of the functions 
+included in package \pkg{VIM}. Figure~\ref{fig:screenshot1} shows the GUI, 
+which pops up automatically after loading the package.
+
+<<load VIM, results=hide>>=
+library(VIMGUI)
+@
+
+\noindent
+If the GUI has been closed, it can be reopened with the following command. All 
+selections and settings from the last session are thereby recovered.
+
+<<load VIM 2, results=hide>>=
+vmGUImenu()	
+@
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.65\textwidth]{screenshot1}
+\caption{The \pkg{VIM} GUI and the \emph{Data} menu.}
+\label{fig:screenshot1}
+\end{center}
+\end{figure}
+
+For visualization, the most important menus are the \emph{Data}, the 
+\emph{Visualization} and the \emph{Options} menus.
+
+
+\subsection{Handling data}
+The \emph{Data} menu allows to select a data frame from the \proglang{R} 
+workspace (see Figure~\ref{fig:screenshot2}). In addition, a data set in 
+\code{.RData} format can be imported from the file system into the \proglang{R} 
+workspace, which is then loaded into the GUI directly.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.65\textwidth]{screenshot2}
+\caption{The dialog for data selection.}
+\label{fig:screenshot2}
+\end{center}
+\end{figure}
+
+Transformations of variables are available via \texttt{Data} 
+$\rightarrow$ \texttt{Transform Variables}. The transformed variables are 
+thereby appended to the data set in use. Commonly used transformations in 
+official statistics are available, e.g., the Box-Cox transformation 
+\citep{Box64} and the log-transformation as an important special case of the 
+Box-Cox transformation. In addition, several other transformations that are 
+frequently used for compositional data \citep{Aitchison86} are implemented. 
+Background maps and coordinates for spatial data can be selected in the 
+\emph{Data} menu as well.
+
+Functionality to scale variables, on the other hand, is offered in the upper 
+right frame of the GUI. Note that scaling is performed on-the-fly, i.e., the 
+scaled variables are simply passed to the underlying plot functions, they are 
+not permanently stored.
+
+
+\subsection{Selecting variables}
+
+After a data set has been chosen, variables can be selected in the main dialog 
+(see Figure~\ref{fig:screenshot3}). An important feature is that the variables 
+will be used in the same order as they were selected, which is especially 
+useful for parallel coordinate plots.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.65\textwidth]{screenshot3}
+\caption{Variable selection with the \pkg{VIM} GUI.}
+\label{fig:screenshot3}
+\end{center}
+\end{figure}
+
+Variables for highlighting are distinguished from the plot variables and can be 
+selected separately (see the lower left frame in Figure~\ref{fig:screenshot3}). 
+If more than one variable chosen for highlighting, it is possible to select 
+whether observations with missing values in any or in all of these variables 
+should be highlighted (see in the lower right frame in 
+Figure~\ref{fig:screenshot3}).
+ 
+ 
+\subsection{Selecting plots} 
+  
+A plot method can be selected from the \emph{Visualization} menu. Note that
+plots that are not applicable with the selected variables are disabled, e.g., 
+if only one plot variable is selected, multivariate plots are not available.
+
+
+\section{An application to EU-SILC data}
+
+In this section, some of the visualization tools are illustrated on the public 
+use sample of the Austrian EU-SILC data from 2004 \citep{STAT07}, which can be 
+obtained from Statistics Austria (see Table~\ref{tab1} for an explanation of 
+the variables used here). This well-known and complex data set is mainly used 
+for measuring risk-of-poverty and social cohesion in Europe, and for monitoring 
+the Lisbon~2010 strategy of the European Union. The raw data set contains a 
+high amount of missing values, which are imputed with model-based and 
+donor-based imputation methods before public release \citep{STAT06}. Since a 
+high amount of missing values are not MCAR, the variables to be included for 
+imputation need to be selected carefully. This problem can be solved with our 
+proposed visualization tools.
+
+\begin{table}[h]
+\caption{Explanation of the used variables from the EU-SILC data set.}
+ \label{tab1}
+ \begin{center}
+\medskip
+\begin{tabular}{|l|l|}
+\hline
+name & meaning \\
+\hline
+\emph{age}      & Age \\
+\emph{R007000}  & Occupation \\
+\emph{P033000}  & Years of employment \\
+\emph{py010n}   & Employee cash or near cash income \\
+\emph{py035n}   & Contributions to individual private pension plans \\
+\emph{py050n}   & Cash benefits or losses from self-employment \\
+\emph{py070n}   & Values of goods produced by own-consumption \\
+\emph{py080n}   & Pension from individual private plans \\
+\emph{py090n}   & Unemployment benefits \\
+\emph{py100n}   & Old-age benefits \\
+\emph{py110n}   & Survivors' benefits \\
+\emph{py120n}   & Sickness benefits \\
+\emph{py130n}   & Disability benefits \\
+\emph{py140n}   & Education-related allowances \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{Schunk}
+\begin{Sinput}
+> incvars <- c(paste("py", c("010", "035", "050", "070", "080", 
++     "090", "100", "110", "120", "130", "140"), "n", sep=""))
+> eusilcNA[, incvars] <- log10(eusilcNA[, incvars] + 1)
+\end{Sinput}
+\end{Schunk}
+
+First of all, it may be of interest how many missing values are contained in 
+each variable. Even more interesting, missing values may frequently occur in 
+certain combinations of variables. This can easily investigated by selecting 
+variables of interest (see Figure~\ref{fig:screenshot3}) and by clicking on 
+\texttt{Visualization $\rightarrow$ \mbox{Aggregate} Missings}. If one prefers 
+the command line language of \proglang{R}, the the plot in Figure~\ref{FigAggr} 
+can be created by invoking: 
+
+\begin{Schunk}
+\begin{Sinput}
+> aggr(eusilcNA[, incvars], numbers=TRUE, prop = c(TRUE, FALSE))
+\end{Sinput}
+\end{Schunk}
+
+Here \code{eusilcNA} denotes the data frame in use (see also 
+Figure~\ref{fig:screenshot2}). The barplot on the left hand side shows the 
+proportion of missing values in each of the selected variables. On the right 
+hand side, all existing combinations of missing and non-missing values in the 
+observations are visualized. A red rectangle indicates missingness in the 
+corresponding variable, a blue rectangle represents available data. In 
+addition, the frequencies of the different combinations are represented by a 
+small bar plot and by numbers. Variables may be sorted by the number of missing 
+values and combinations by the frequency of occurrence to give more power to 
+finding the structure of missing values. For example, the top row in 
+Figure~\ref{fig:aggr} (right) represents the combination with missing values in 
+variables \emph{py010n} (employee cash or near cash income), \emph{py035n} 
+(contributions to individual private pension plans) and \emph{py090n} 
+(unemployment benefits), and observed values in the remaining variables, 
+which appears only once in the data. 
+%The last row reflects the 3827 observations that do not contain missing values.
+
+The plot reveals an exceptionally high number of missing values in variable
+\emph{py010n}. The combination with variable \emph{py035n} still contains 32
+missing values. Note that it is possible to display proportions of missing
+values and combinations rather than absolute numbers.
+ 
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.9\textwidth]{fig-aggr}
+\caption{Aggregation plot of the income components in the public use sample of
+the Austrian EU-SILC data from 2004. \emph{Left}: barplot of the proportions of
+missing values in each of the income components. \emph{Right}: all existing
+combinations of missing (red) and non-missing (blue) values in the
+observations. The frequencies of the combinations are visualized by small
+horizontal bars.}
+\label{fig:aggr}
+\end{center}
+\end{figure}
+
+
+\subsection{Univariate plots}
+
+When only one variable is selected, only plots emphasized in 
+Figure~\ref{fig:screenshot4} can be applied. Standard univariate plots, such as 
+barplots and spine plots for categorical variables and histograms, spinograms 
+and different types of boxplots for continuous variables, have been adapted to 
+display information about missing values.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.65\textwidth]{screenshot4}
+\caption{Univariate Plots supported by the \pkg{VIM} GUI.}
+\label{fig:screenshot4}
+\end{center}
+\end{figure}
+
+For example, it may be of interest to display the distribution of years of 
+employment, with missing values in \emph{py010n} (employee cash or near cash 
+income) highlighted. A spinogram \citep{Hofmann05} can easily be generated by 
+clicking \texttt{Visualization $\rightarrow$ Spinogram with Missings}. 
+Alternatively, the output shown in Figure~\ref{fig:spine} can be produced with 
+the following command:
+
+\begin{Schunk}
+\begin{Sinput}
+> spineMiss(eusilcNA[, c("P033000", "py010n")])
+\end{Sinput}
+\end{Schunk}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.8\textwidth]{fig-spine}
+\caption{Spinogram of \emph{P033000} (years of employment) with color coding 
+for missing (red) and available (blue) data in \emph{py010n} (employee cash or 
+near cash income).}
+\label{fig:spine}
+\end{center}
+\end{figure}
+
+Figure~\ref{fig:spine} indicates that the probability of missingness in 
+\emph{py010n} depends on the years of employment.
+
+
+\subsection{Bivariate plots}
+For bivariate data, different kinds of scatterplots are implemented. 
+Figure~\ref{fig:screenshot5} lists the plots applicable when two variables are 
+selected. Multivariate plots are also highlighted because they can be used in 
+the bivariate case, too.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.65\textwidth]{screenshot5}
+\caption{Bivariate plots (as well as multivariate plots) available 
+in the \pkg{VIM} GUI.}
+\label{fig:screenshot5}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.8\textwidth]{fig-margin}
+\caption{Scatterplot of \emph{age} and transformed \emph{py010n} (employee cash 
+or near cash income) with information about missing values in the plot margins.}
+\label{fig:margin}
+\end{center}
+\end{figure}
+
+Figure~\ref{fig:margin} shows a scatterplot with information about the 
+univariate distributions and missingness of the variables in the plot margins 
+(\texttt{Visualization $\rightarrow$ Marginplot}). The boxplots in red indicate 
+observations with missing values in the other variable. It is clearly visible 
+that the amount of missingness in \emph{py010n} (employee cash or near cash 
+income) is less for older people. Note that semi-transparent colors are used to 
+prevent overplotting. The figure can also be produced with the command line 
+interface of \proglang{R}, using the following command:
+
+\begin{Schunk}
+\begin{Sinput}
+> marginplot(eusilcNA[, c("age", "py010n")], alpha = 0.6)
+\end{Sinput}
+\end{Schunk}
+
+
+\subsection{Multivariate plots}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.9\textwidth]{fig-parallel}
+\caption{Parallel coordinate plot of \emph{age}, \emph{P033000} (years of 
+employment), transformed \emph{py010n} (employee cash or near cash income) and 
+transformed \emph{py035n} (contributions to individual private pension plans), 
+with color coding for missing (red) and available (blue) data in variable 
+\emph{py050n} (cash benefits or losses from self-employment).}
+\label{fig:parallel}
+\end{center}
+\end{figure}
+
+
+Parallel coordinate plots \citep{Wegman90} are very powerful for displaying 
+multivariate relationships in data. A natural way of displaying information 
+about missing data is to highlight observations according to missingness in a 
+certain variable or a combination of variables. However, plotting variables 
+with missing values results in disconnected lines, making it impossible to 
+trace the respective observations across the graph. As a remedy, missing values 
+may be represented by a point above the corresponding coordinate axis, which is 
+separated from the main plot by a small gap and a horizontal line (see 
+Figure~\ref{fig:parallel}). Connected lines can then be drawn for all 
+observations.
+
+Such parallel coordinate plots can be genereated by clicking 
+\texttt{Visualization $\rightarrow$ Parallel Coordinate Plot with Missings} in 
+the GUI or by using the function \code{parcoordMiss()} on the command line. The 
+example in Figure~\ref{fig:parallel} can be produced with:
+
+\begin{Schunk}
+\begin{Sinput}
+> parcoordMiss(eusilcNA[, c("age", "P033000", "py010n", "py035n", 
++     "py050n")], plotvars = 1:4, highlight = 5, alpha = 0.2)
+\end{Sinput}
+\end{Schunk}
+
+A data frame containing all variables of interest needs to supplied as the 
+first argument, the variables to be plotted are given by argument 
+\code{plotvars}, and the variables to be used for highlighting are specified by 
+argument \code{highlight}.
+
+Due to the large number of lines, a very low alpha value (i.e., very high 
+transparancy) is used in Figure~\ref{fig:parallel} to prevent overplotting. 
+Missing values in \emph{py050n} occur mainly for middle-aged people. Moreover, 
+observations with missing values in \emph{py050n} behave in an entire different 
+way for the variables \emph{py010n} (employee cash or near cash income) and 
+\emph{py035n} (contributions to individual private pension plans) than the 
+main part of the data.
+
+The \emph{matrix plot} is an even more powerful multivariate plot. It 
+visualizes all cells of the data matrix by (small) rectangles. In the example 
+in Figure~\ref{fig:matrix}, red rectangles are drawn for missing values, and a 
+greyscale is used for the available data. To determine the grey level, the 
+variables are first scaled to the interval $[0,1]$. Small values are assigned a 
+light grey and high values a dark grey ($0$ corresponds to white, $1$ to black). 
+In addition, the observations can be sorted by the magnitude of a selected 
+variable, which can also be done interactively by clicking in the corresponding 
+column of the plot. Using the GUI, a matrix plot can be produced by clicking 
+\texttt{Visualization $\rightarrow$ Matrix Plot}. The example in 
+Figure~\ref{fig:matrix} can also be created on the command line by invoking the 
+following command:
+
+\begin{Schunk}
+\begin{Sinput}
+> matrixplot(eusilcNA[, c("age", "R007000", incvars)], 
++     sortby = "R007000")
+\end{Sinput}
+\end{Schunk}
+
+Figure~\ref{fig:matrix} shows a matrix plot of \emph{age}, \emph{R007000} 
+(occupation) and the transformed income components, sorted by variable 
+\emph{R007000} (occupation). It is clearly visible that missing values in most 
+income components depend on the occupation of the corresponding person. Thus 
+the missing data mechanism was found to be MAR for these variables, which 
+should be considered when applying imputation methods.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.8\textwidth]{fig-matrix}
+\caption{Matrixplot of \emph{age}, \emph{R007000} (occupation) and the 
+transformed income components, sorted by variable \emph{R007000} (occupation).}
+\label{fig:matrix}
+\end{center}
+\end{figure}
+
+
+\subsection{Other plots}
+Various other plots are availabe in the package and can also be created with 
+the GUI (see Figures~\ref{fig:screenshot4} and~\ref{fig:screenshot5}). For 
+spatial data, mapping is supported if a background map is provided by the user, 
+e.g., as a shape file, data frame or list of coordinates.
+
+
+\section{Fine tuning}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.65\textwidth]{screenshot8}
+\caption{The \emph{Preferences} dialog of the \pkg{VIM} GUI.}
+\label{fig:screenshot8}
+\end{center}
+\end{figure}
+
+In the \emph{Preferences} dialog from the \emph{Options} menu (click 
+\texttt{Options} $\rightarrow$ \texttt{Preferences}), which is displayed in 
+Figure~\ref{fig:screenshot8}, the colors and alpha channel to be used in the 
+plots can be set. In addition, it contains an option to embed multivariate 
+plots in \proglang{Tcl/Tk} windows. This is useful if the number of 
+observations and/or variables is large, because scrollbars allow to move from 
+one part of the plot to another.
+
+
+\section{Interactive features}
+
+Many interactive features are implemented in the plot functions in order to 
+allow easy modification of the plots. 
+
+When variables are selected for highlighting in univariate plots such as
+histograms, barplots, spine plots or spinograms, it is possible to switch
+between the variables. Clicking in the right plot margin of a histogram, for 
+example, corresponds with creating a histogram (or barplot) for the 
+next variable, and clicking in the left margin switches to the previous 
+variable. This interactive feature is particularly usedful for parallel 
+boxplots, as it allows to view all possible $p(p-1)$ combinations with $p-1$ 
+clicks, where $p$ denotes the number of variables.
+
+For multivariate plots (scatterplot matrix and parallel coordinate plot),
+variables for highlighting can be selected and deselected interactively, by
+clicking in a diagonal panel of the scatterplot matrix or on a coordinate axis
+in the parallel coordinate plot. Information about the current selection is
+printed on the \proglang{R}-console.
+
+The matrixplot is particulary powerful if the observations are sorted by a
+specific variable (see Figure \ref{fig:matrix}). This can be done by clicking 
+on the corresponding column.
+ 
+
+\section{Summary}
+
+We showed that the visualization of missing values is extremely simple with 
+package \pkg{VIM}, either by using the GUI or by typing code on the 
+\proglang{R} command line. With the visualization techniques in \pkg{VIM}, it 
+is possible to gain insight into the data and to understand the structure of 
+missing values. The latter is absolutely necessary when dealing with missing 
+values, e.g., before imputation is performed.
+
+\section{Acknowledgments}
+This work was partly funded by the European Union (represented by the European
+Commission) within the 7$^{\mathrm{th}}$ framework programme for research
+(Theme~8, Socio-Economic Sciences and Humanities, Project AMELI (Advanced
+Methodology for European Laeken Indicators), Grant Agreement No. 217322).
+Visit \url{http://ameli.surveystatistics.net} for more information on the 
+project.
+
+
+\bibliographystyle{plainnat}  
+\bibliography{VIM-EU-SILC}
+
+
+
+\end{document}

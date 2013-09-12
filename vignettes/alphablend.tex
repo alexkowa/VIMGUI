@@ -1,0 +1,37 @@
+\HeaderA{alphablend}{Alphablending for colors}{alphablend}
+\keyword{color}{alphablend}
+%
+\begin{Description}\relax
+Convert colors to semitransparent colors.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+alphablend(col, alpha = NULL, bg = NULL)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{col}] a vector specifying colors.
+\item[\code{alpha}] a numeric vector containing the alpha values (between 0 
+and 1).
+\item[\code{bg}] the background color to be used for alphablending.  This can 
+be used as a workaround for graphics devices that do not support 
+semitransparent colors.
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+a vector containing the semitransparent colors.
+\end{Value}
+%
+\begin{Author}\relax
+Andreas Alfons
+\end{Author}
+%
+\begin{Examples}
+\begin{ExampleCode}
+alphablend("red", 0.6)
+\end{ExampleCode}
+\end{Examples}
