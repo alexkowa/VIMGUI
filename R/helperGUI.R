@@ -296,3 +296,12 @@ compareImputations <- function(old, new){
   n <- sapply(old, function(s)sum(is.na(s))) != sapply(new, function(s)sum(is.na(s)))
   names(n[which(n==TRUE)])
 }
+
+#uses gtk code to set the base color (background color of most widgets) to specified color
+#R names for colors are valid
+setWidgetBgColor <- function(widget, color){
+  w <- getToolkitWidget(widget)
+  gtkWidgetModifyBase(w, GtkStateType['normal'], as.GdkColor(color))
+  gtkWidgetModifyBase(w, GtkStateType['selected'], as.GdkColor(color))
+  gtkWidgetModifyBase(w, GtkStateType['active'], as.GdkColor(color))
+}

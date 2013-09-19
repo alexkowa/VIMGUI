@@ -2160,12 +2160,50 @@ VIMGUI <- function(startupObject=NULL){
     survey.layout[7,3] <- survey.fpc
     survey.layout[8,3] <- survey.weights
     survey.layout[9,3] <- gg
-    addHandlerFocus(survey.ids, handler=function(h,...){putVm("CreateSurveyDialogFocus", "ids")})
-    addHandlerFocus(survey.probs, handler=function(h,...){putVm("CreateSurveyDialogFocus", "probs")})
-    addHandlerFocus(survey.strata, handler=function(h,...){putVm("CreateSurveyDialogFocus", "strata")})
-    addHandlerFocus(survey.vars, handler=function(h,...){putVm("CreateSurveyDialogFocus", "vars")})
-    addHandlerFocus(survey.fpc, handler=function(h,...){putVm("CreateSurveyDialogFocus", "fpc")})
-    addHandlerFocus(survey.weights, handler=function(h,...){putVm("CreateSurveyDialogFocus", "weights")})
+    
+    setWidgetBgColor(survey.ids, "palegoldenrod")
+    
+    
+    #resets the background color of all entry fields
+    resetSurveyColors <- function(){
+      setWidgetBgColor(survey.ids, "white")
+      setWidgetBgColor(survey.probs, "white")
+      setWidgetBgColor(survey.strata, "white")
+      setWidgetBgColor(survey.vars, "white")
+      setWidgetBgColor(survey.fpc, "white")
+      setWidgetBgColor(survey.weights, "white")
+    }
+    
+    addHandlerFocus(survey.ids, handler=function(h,...){
+      putVm("CreateSurveyDialogFocus", "ids")
+      resetSurveyColors()
+      setWidgetBgColor(survey.ids, "palegoldenrod")
+      })
+    addHandlerFocus(survey.probs, handler=function(h,...){
+      putVm("CreateSurveyDialogFocus", "probs")
+      resetSurveyColors()
+      setWidgetBgColor(survey.probs, "palegoldenrod")
+      })
+    addHandlerFocus(survey.strata, handler=function(h,...){
+      putVm("CreateSurveyDialogFocus", "strata")
+      resetSurveyColors()
+      setWidgetBgColor(survey.strata, "palegoldenrod")
+      })
+    addHandlerFocus(survey.vars, handler=function(h,...){
+      putVm("CreateSurveyDialogFocus", "vars")
+      resetSurveyColors()
+      setWidgetBgColor(survey.vars, "palegoldenrod")
+      })
+    addHandlerFocus(survey.fpc, handler=function(h,...){
+      putVm("CreateSurveyDialogFocus", "fpc")
+      resetSurveyColors()
+      setWidgetBgColor(survey.fpc, "palegoldenrod")
+      })
+    addHandlerFocus(survey.weights, handler=function(h,...){
+      putVm("CreateSurveyDialogFocus", "weights")
+      resetSurveyColors()
+      setWidgetBgColor(survey.weights, "palegoldenrod")
+      })
     #if double click on table add selected variable to textfield which had focus last
     addHandlerChanged(survey.variables, handler=function(h,...){
       field <- getVm("CreateSurveyDialogFocus")
@@ -2917,11 +2955,16 @@ VIMGUI <- function(startupObject=NULL){
   imputation.regression.group[3,2] <- imputation.regression.family
   imputation.regression.group[4,2] <- imputation.regression.robust
   addHandlerChanged(imputation.regression.variables, handler=regressionTableHandler)
+  setWidgetBgColor(imputation.regression.dependent, "palegoldenrod")
   addHandlerFocus(imputation.regression.dependent, handler=function(h,...){
     putVm("regressionFocus", 0)
+    setWidgetBgColor(imputation.regression.dependent, "palegoldenrod")
+    setWidgetBgColor(imputation.regression.independent, "white")
   })
   addHandlerFocus(imputation.regression.independent, handler=function(h,...){
     putVm("regressionFocus", 1)
+    setWidgetBgColor(imputation.regression.independent, "palegoldenrod")
+    setWidgetBgColor(imputation.regression.dependent, "white")
   })
   addHandlerClicked(imputation.regression.button1, action="+", handler=regressionButtonHandler)
   addHandlerClicked(imputation.regression.button2, action=":", handler=regressionButtonHandler)
