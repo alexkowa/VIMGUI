@@ -10,6 +10,7 @@
     addTclPath(tklibs)
     tclRequire("BWidget")
     #vmGUImenu()
-    packageStartupMessage("VIM is ready to use. \n Enter vmGUImenu() to start the graphical user interface.")
+    packageStartupMessage("VIM is ready to use. \n (Enter vmGUImenu() to start the OLD graphical user interface.)\n
+    Enter VIMGUI() to start the NEW graphical user interface.")
 }
 

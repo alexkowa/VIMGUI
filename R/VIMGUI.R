@@ -548,13 +548,15 @@ VIMGUI <- function(startupObject=NULL){
       if( exists(varName, envir=.GlobalEnv) ) {
                 gconfirm("Variable already exists, do you want to replace it?",
                     title="Information",
-                    handler=function(h, ...) { 
-                      assign(varName, dataObject, envir=.GlobalEnv)
+                    handler=function(h, ...) {
+                      en <- as.environment(1)
+                      assign(varName, dataObject, envir=en)
                       dispose(saveVariable.window)
                       })
               }
       else{
-        assign(varName, dataObject, envir=.GlobalEnv)
+        en <- as.environment(1)
+        assign(varName, dataObject, envir=en)
         dispose(saveVariable.window)
       }
       
@@ -2590,7 +2592,7 @@ VIMGUI <- function(startupObject=NULL){
   
   ###
   #Initializations
-  data(sleep)
+  #data(sleep)
   #putVm("activeDataSetOriginal", sleep)
   #putVm("activeDataSetImputed", NULL)
   putVm("plotColors", c("skyblue","red","skyblue4","red4","orange","orange4"))
