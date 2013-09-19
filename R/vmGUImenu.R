@@ -712,7 +712,7 @@ vmGUImenu <- function() {
         if(getVm("tkr")) {
             TKRaggr(x, col=getVm("col")[1:2], numbers=TRUE, prop=c(TRUE, FALSE))
         } else {
-            X11()
+            dev.new()
             plot(res, col=getVm("col")[1:2], numbers=TRUE, prop=c(TRUE, FALSE))
         }
     }
@@ -730,7 +730,7 @@ vmGUImenu <- function() {
 		if(getVm("tkr")) {
 			TKRaggr(x, delimiter=getVm("delimiter"), col=getVm("col")[c(1,2,5)], numbers=TRUE, prop=c(TRUE, FALSE))
 		} else {
-			X11()
+			dev.new()
 			plot(res, col=getVm("col")[c(1,2,5)], numbers=TRUE, prop=c(TRUE, FALSE))
 		}
 	}
@@ -740,7 +740,7 @@ vmGUImenu <- function() {
         vars <- union(getVm("vars"), getVm("highlight"))
         x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), select=vars)
         x[,1] <- prepare(x[,1], scaling=getVm("scaling"))
-        X11()
+        dev.new()
         histMiss(x, selection=getVm("selection"), 
             col=getVm("col"), xlab=getLabel(vars[1]))
         #leg <- paste(c("observed in","missing in"), vars[2])
@@ -752,7 +752,7 @@ vmGUImenu <- function() {
 		vars <- c(vars,getVm("imp_vars"))
 		x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), select=vars)
 		x[,1] <- prepare(x[,1], scaling=getVm("scaling"))
-		X11()
+		dev.new()
 		histMiss(x, delimiter=getVm("delimiter"), selection=getVm("selection"), 
 				col=getVm("col"), xlab=getLabel(vars[1]))
 		#leg <- paste(c("observed in","missing in"), vars[2])
@@ -764,7 +764,7 @@ vmGUImenu <- function() {
         vars <- union(getVm("vars"), getVm("highlight"))
         x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), select=vars)
         x[,1] <- prepare(x[,1], scaling=getVm("scaling"))
-        X11()
+        dev.new()
         spineMiss(x, selection=getVm("selection"), 
             col=getVm("col"), xlab=getLabel(vars[1]))
     }
@@ -774,7 +774,7 @@ vmGUImenu <- function() {
 		vars <- c(vars,getVm("imp_vars"))
 		x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), select=vars)
 		x[,1] <- prepare(x[,1], scaling=getVm("scaling"))
-		X11()
+		dev.new()
 		spineMiss(x, delimiter=getVm("delimiter"), selection=getVm("selection"), 
 				col=getVm("col"), xlab=getLabel(vars[1]))
 	}
@@ -783,7 +783,7 @@ vmGUImenu <- function() {
     BarMiss <- function() {
         vars <- union(getVm("vars"), getVm("highlight"))
         x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), select=vars)
-        X11()
+        dev.new()
         barMiss(x, selection=getVm("selection"), col=getVm("col"), xlab=vars[1])
     }
 	# barplot with imputed missings
@@ -791,7 +791,7 @@ vmGUImenu <- function() {
 		vars <- union(getVm("vars"), getVm("highlight"))
 		vars <- c(vars,getVm("imp_vars"))
 		x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), select=vars)
-		X11()
+		dev.new()
 		barMiss(x, delimiter=getVm("delimiter"), selection=getVm("selection"),
 				col=getVm("col"), xlab=vars[1])
 	}
@@ -800,7 +800,7 @@ vmGUImenu <- function() {
     SpineplotMiss <- function() {
         vars <- union(getVm("vars"), getVm("highlight"))
         x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), select=vars)
-        X11()
+        dev.new()
         spineMiss(x, selection=getVm("selection"), 
             col=getVm("col"), xlab=vars[1])
     }
@@ -809,7 +809,7 @@ vmGUImenu <- function() {
 		vars <- union(getVm("vars"), getVm("highlight"))
 		vars <- c(vars,getVm("imp_vars"))
 		x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), select=vars)
-		X11()
+		dev.new()
 		spineMiss(x, delimiter=getVm("delimiter"), selection=getVm("selection"), 
 				col=getVm("col"), xlab=vars[1])
 	}
@@ -827,7 +827,7 @@ vmGUImenu <- function() {
             d <- unlist(options("digits"))
             cat(paste("\np.value: ", round(t$p.v, digits=d), "\n", sep=""))
         }
-        X11()
+        dev.new()
 #        boxplot(x[!t$ind, 1], x[t$ind, 1], names=boxnames, 
 #            col=getVm("col")[1:2], ylab=getLabel(vars[1]))
         pbox(x, selection=getVm("selection"), 
@@ -844,7 +844,7 @@ vmGUImenu <- function() {
 			d <- unlist(options("digits"))
 			cat(paste("\np.value: ", round(t$p.v, digits=d), "\n", sep=""))
 		}
-		X11()
+		dev.new()
 		pbox(x, delimiter=getVm("delimiter"), selection=getVm("selection"), 
 				col=getVm("col")[c(1,2,4,5,6)], ylab=getLabel(vars[1]))
 	}
@@ -857,7 +857,7 @@ vmGUImenu <- function() {
         if(getVm("tkr")) {
             TKRpbox(x, col=getVm("col")[c(1,2,4)], ylab=getLabel(vars[1]))
         } else {
-            X11()
+            dev.new()
             pbox(x, col=getVm("col")[c(1,2,4)], ylab=getLabel(vars[1]))
         }
     }
@@ -871,7 +871,7 @@ vmGUImenu <- function() {
 			TKRpbox(x, delimiter=getVm("delimiter"), 
 					col=getVm("col")[c(1,2,4,5,6)], ylab=getLabel(vars[1]))
 		} else {
-			X11()
+			dev.new()
 			pbox(x, delimiter=getVm("delimiter"), 
 					col=getVm("col")[c(1,2,4,5,6)], ylab=getLabel(vars[1]))
 		}
@@ -883,7 +883,7 @@ vmGUImenu <- function() {
         x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), select=vars)
         x <- prepare(x, scaling=getVm("scaling"))
         labs <- getLabel(vars)
-        X11()
+        dev.new()
         marginplot(x, col=getVm("col")[c(1,2,4)], 
             alpha=getVm("alpha"), xlab=labs[1], ylab=labs[2])
     }
@@ -893,7 +893,7 @@ vmGUImenu <- function() {
 		x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), select=vars)
 		x <- prepare(x, scaling=getVm("scaling"))
 		labs <- getLabel(vars)
-		X11()
+		dev.new()
 		marginplot(x, delimiter=getVm("delimiter"),
 				col=getVm("col")[c(1,2,4,5,6)], alpha=getVm("alpha"),
 				xlab=labs[1], ylab=labs[2])
@@ -905,7 +905,7 @@ vmGUImenu <- function() {
         x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), select=vars)
         x <- prepare(x, scaling=getVm("scaling"))
         labs <- getLabel(vars)
-        X11()
+        dev.new()
         scattMiss(x, col=getVm("col")[1:2], 
             alpha=getVm("alpha"), xlab=labs[1], ylab=labs[2])
     }
@@ -915,7 +915,7 @@ vmGUImenu <- function() {
 		x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), select=vars)
 		x <- prepare(x, scaling=getVm("scaling"))
 		labs <- getLabel(vars)
-		X11()
+		dev.new()
 		scattMiss(x, delimiter=getVm("delimiter"), col=getVm("col")[c(1,2,5)], 
 				alpha=getVm("alpha"), xlab=labs[1], ylab=labs[2])
 	}
@@ -924,14 +924,14 @@ vmGUImenu <- function() {
     ScattJitt <- function() {
         vars <- getVm("vars")
         x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), select=vars)
-        X11()
+        dev.new()
         scattJitt(x, col=getVm("col")[c(1,2,4)], xlab=vars[1], ylab=vars[2])
     }
 	# bivariate jitter plot with imputed missings
 	ScattJittImp <- function() {
 		vars <- c(getVm("vars"), getVm("imp_vars"))
 		x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), select=vars)
-		X11()
+		dev.new()
 		scattJitt(x, delimiter=getVm("delimiter"),
 				col=getVm("col")[c(1,2,4,5,6)], xlab=vars[1], ylab=vars[2])
 	}
@@ -944,7 +944,7 @@ vmGUImenu <- function() {
         if(getVm("tkr")) {
             TKRmarginmatrix(x, col=getVm("col")[c(1,2,4)], alpha=getVm("alpha"))
         } else {
-            X11()
+            dev.new()
             marginmatrix(x, col=getVm("col")[c(1,2,4)], alpha=getVm("alpha"))
         }
     }
@@ -958,7 +958,7 @@ vmGUImenu <- function() {
 			TKRmarginmatrix(x, delimiter=getVm("delimiter"),
 					col=getVm("col")[c(1,2,4,5,6)], alpha=getVm("alpha"))
 		} else {
-			X11()
+			dev.new()
 			marginmatrix(x, delimiter=getVm("delimiter"),
 					col=getVm("col")[c(1,2,4,5,6)], alpha=getVm("alpha"))
 		}
@@ -977,7 +977,7 @@ vmGUImenu <- function() {
                 plotvars=vars, col=getVm("col")[1:2], 
                 alpha=getVm("alpha"))
         } else {
-            X11()
+            dev.new()
             scattmatrixMiss(x, highlight=highlight, 
                 selection=getVm("selection"), 
                 plotvars=vars, col=getVm("col")[1:2], 
@@ -997,7 +997,7 @@ vmGUImenu <- function() {
 					plotvars=vars, col=getVm("col")[c(1,2,5)], 
 					alpha=getVm("alpha"))
 		} else {
-			X11()
+			dev.new()
 			scattmatrixMiss(x, delimiter=getVm("delimiter"),
 					highlight=highlight, selection=getVm("selection"), 
 					plotvars=vars, col=getVm("col")[c(1,2,5)], 
@@ -1017,7 +1017,7 @@ vmGUImenu <- function() {
                 selection=getVm("selection"), plotvars=vars, col=getVm("col"), 
                 alpha=getVm("alpha"))
         }else {
-            X11()
+            dev.new()
             parcoordMiss(x, highlight=highlight, selection=getVm("selection"), 
                 plotvars=vars, col=getVm("col"), alpha=getVm("alpha"))
         }
@@ -1034,7 +1034,7 @@ vmGUImenu <- function() {
 					selection=getVm("selection"), plotvars=vars, col=getVm("col"), 
 					alpha=getVm("alpha"))
 		}else {
-			X11()
+			dev.new()
 			parcoordMiss(x, delimiter=getVm("delimiter"), highlight=highlight, selection=getVm("selection"), 
 					plotvars=vars, col=getVm("col"), alpha=getVm("alpha"))
 		}
@@ -1047,7 +1047,7 @@ vmGUImenu <- function() {
         x <- prepare(x, scaling=getVm("scaling"))
         if(getVm("tkr")) TKRmatrixplot(x, col=getVm("col")[2])
         else {
-            X11()
+            dev.new()
             matrixplot(x, col=getVm("col")[2])
         }
     }
@@ -1059,7 +1059,7 @@ vmGUImenu <- function() {
 		x <- prepare(x, scaling=getVm("scaling"))
 		if(getVm("tkr")) TKRmatrixplot(x, delimiter=getVm("delimiter"), col=getVm("col")[c(2,5)])
 		else {
-			X11()
+			dev.new()
 			matrixplot(x, delimiter=getVm("delimiter"), col=getVm("col")[c(2,5)])
 		}
 	}
@@ -1070,7 +1070,7 @@ vmGUImenu <- function() {
         highlight <- getVm("highlight")
         x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), 
             select=union(vars, highlight))
-        X11()
+        dev.new()
         mosaicMiss(x, highlight=highlight, selection=getVm("selection"), 
             plotvars=vars, col=getVm("col")[1:2], miss.labels=FALSE)
     }
@@ -1080,7 +1080,7 @@ vmGUImenu <- function() {
 		highlight <- getVm("highlight")
 		x <- subset(get(ActiveDataSet(), envir=.GlobalEnv), 
 				select=c(union(vars, highlight), getVm("imp_vars")))
-		X11()
+		dev.new()
 		mosaicMiss(x, delimiter=getVm("delimiter"), highlight=highlight,
 				selection=getVm("selection"), plotvars=vars, 
 				col=getVm("col")[c(1,2,5)], miss.labels=FALSE)
@@ -1093,7 +1093,7 @@ vmGUImenu <- function() {
         coords <- subset(activeData, select=getVm("coords"))
 #        main <- paste("Selected variables:\n", paste(colnames(x), 
 #                collapse=", "))
-        X11()
+        dev.new()
         mapMiss(x, coords, map=getVm("map"), selection=getVm("selection"), 
             col=getVm("col")[1:2], alpha=getVm("alpha"), legend=TRUE, 
             cex.main=1)
@@ -1106,7 +1106,7 @@ vmGUImenu <- function() {
 		coords <- subset(activeData, select=getVm("coords"))
 #        main <- paste("Selected variables:\n", paste(colnames(x), 
 #                collapse=", "))
-		X11()
+		dev.new()
 		mapMiss(x, coords, map=getVm("map"), delimiter=getVm("delimiter"),
 				selection=getVm("selection"), col=getVm("col")[c(1,2,5)],
 				alpha=getVm("alpha"), legend=TRUE, cex.main=1)
@@ -1120,7 +1120,7 @@ vmGUImenu <- function() {
         coords <- subset(activeData, select=getVm("coords"))
         alpha <- getVm("alpha")
         border <- if(alpha == 1) "white" else "transparent"
-        X11()
+        dev.new()
         growdotMiss(x, coords, map=getVm("map"), selection=getVm("selection"), 
             col=getVm("col"), alpha=alpha, border=border, legend=TRUE)
     }
@@ -1133,7 +1133,7 @@ vmGUImenu <- function() {
 		coords <- subset(activeData, select=getVm("coords"))
 		alpha <- getVm("alpha")
 		border <- if(alpha == 1) "white" else "transparent"
-		X11()
+		dev.new()
 		growdotMiss(x, coords, map=getVm("map"), delimiter=getVm("delimiter"),
 				selection=getVm("selection"), col=getVm("col"), alpha=alpha,
 				border=border, legend=TRUE)
@@ -1144,7 +1144,7 @@ vmGUImenu <- function() {
         activeData <- get(ActiveDataSet(), envir=.GlobalEnv)
         x <- activeData[, getVm("vars")]
         region <- activeData[, getVm("region")]
-        X11()
+        dev.new()
         colormapMiss(x, region, map=getVm("map"), col=getVm("col")[2])
     }
 	# map with colored regions
@@ -1159,7 +1159,7 @@ vmGUImenu <- function() {
 		imp_var <- imp_var[imp_var %in% paste(var,delimiter, sep="")]
 		if(length(imp_var) != 0) imp_var <- activeData[, imp_var]
 		else imp_var <- NULL
-		X11()
+		dev.new()
 		colormapMiss(x, region, map=getVm("map"), imp_index = imp_var,
 				col=getVm("col")[c(2,5)])
 	}
