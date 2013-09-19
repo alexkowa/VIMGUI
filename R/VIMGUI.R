@@ -2135,7 +2135,7 @@ VIMGUI <- function(startupObject=NULL){
     survey.ids <- gedit("1")
     survey.probs <- gedit()
     survey.strata <- gedit()
-    survey.vars <- gedit()
+    survey.vars <- gedit(paste(variableNames, sep=" + "))
     survey.fpc <- gedit()
     survey.weights <- gedit()
     gg <- ggroup()
@@ -2225,11 +2225,13 @@ VIMGUI <- function(startupObject=NULL){
         dataobject <- getVm("activeDataSetOriginal")
         variableNames <- getVariableNames(dataobject)
         insertTable(survey.variables, variableNames)
+		svalue(survey.vars) <- paste(variableNames, collapse=" + ")
       }
       else{
         dataobject <- get(svalue(survey.dataset))
         variableNames <- getVariableNames(dataobject)
         insertTable(survey.variables, variableNames)
+		svalue(survey.vars) <- paste(variableNames, collapse=" + ")
       }
     })
     #discard button, close window
@@ -2931,7 +2933,8 @@ VIMGUI <- function(startupObject=NULL){
   imputation.undo.variables <- gtable(data.frame(variable="", method="", time=""))
   names(imputation.undo.variables) <- c("variable","method", "time")
   #size(imputation.undo.variables) <- c(120,200)
-  imputation.undo.group[1:10,1:2, expand=TRUE] <- imputation.undo.variables
+  imputation.undo.group[1,1:2] <- glabel("Double click on a variable to undo imputation:")
+  imputation.undo.group[2:10,1:2, expand=TRUE] <- imputation.undo.variables
   addHandlerChanged(imputation.undo.variables, handler=undoImputation) 
 
   
