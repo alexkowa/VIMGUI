@@ -454,7 +454,7 @@ VIMGUI <- function(startupObject=NULL){
     putVm("ScriptHistory", list(loadScript, "originaldataset <- activedataset"))
     
     initPanels()
-    updatePanels()
+    updatePanels(firstTime=TRUE)
     dispose(getVm("loadingWindowID"))
   }
   
@@ -1414,7 +1414,7 @@ VIMGUI <- function(startupObject=NULL){
   }
   
   #called after switching the main tabs 
-  updatePanels <- function(pageno=svalue(mainNotebook)){
+  updatePanels <- function(pageno=svalue(mainNotebook), firstTime=FALSE){
     #print("test")
     if(pageno==1){
       if (is.null(getVm("activeDataSetImputed"))) {
@@ -1430,7 +1430,8 @@ VIMGUI <- function(startupObject=NULL){
       blockHandler(dataPanel.bySelection, dataPanel.bySelectionHandler)
       blockHandler(dataPanel.statisticsSelection, dataPanel.statisticsSelectionHandler)
       dataPanel.variableSelection[]<- getVariableNames(getVm("activeDataSetOriginal"))
-      dataPanel.bySelection[]<- getVariableNames(getVm("activeDataSetOriginal"))
+      dataPanel.bySelection[]<- c(" ", getVariableNames(getVm("activeDataSetOriginal")))
+      svalue(dataPanel.bySelection) <- " "
       #change available statistics depending on data is survey or nor
       if (is.survey(getVm("activeDataSetOriginal"))){
         dataPanel.statisticsSelection[] <- c("svymean", "svyvar", "svytotal")
@@ -1439,6 +1440,11 @@ VIMGUI <- function(startupObject=NULL){
       else{
         dataPanel.statisticsSelection[] <- c("mean", "var")
         svalue(dataPanel.statisticsSelection) <- "mean"
+      }
+      if (firstTime == TRUE){
+        svalue(dataPanel.variableSelection, index=TRUE) <- 1
+        svalue(dataPanel.bySelection) <- " "
+        dataPanelChangeHandler()
       }
       unblockHandler(dataPanel.statisticsSelection, dataPanel.statisticsSelectionHandler)
       unblockHandler(dataPanel.variableSelection, dataPanel.variableSelectionHandler)
@@ -2066,7 +2072,7 @@ VIMGUI <- function(startupObject=NULL){
   
   #called if the widgets controlling the contents of the table are changed
   #recalculates the table
-  dataPanelChangeHandler <- function(h,...){
+  dataPanelChangeHandler <- function(...){
     #print("change Handler!")
     #print(h)
     #print(paste(svalue(dataPanel.variableSelection), svalue(dataPanel.statisticsSelection), svalue(dataPanel.bySelection)))
@@ -2078,27 +2084,64 @@ VIMGUI <- function(startupObject=NULL){
     else{
       curdat <- getVm("activeDataSetImputed")
     }
-    #if variable and by are selected
-    if (is.null(svalue(dataPanel.variableSelection))==FALSE &&
-          is.null(svalue(dataPanel.bySelection))==FALSE){
-      if (is.survey(curdat)) {
-        
-        #print(as.formula(paste("~",svalue(dataPanel.variableSelection))))
-        tab <- as.data.frame(svyby(as.formula(paste("~",svalue(dataPanel.variableSelection))),
-                     as.formula(paste("~",svalue(dataPanel.bySelection))),
-                     curdat, 
-                     get(svalue(dataPanel.statisticsSelection))), stringsAsFactors=FALSE)
-        tab <- data.frame(lapply(tab, as.character), stringsAsFactors=FALSE)
-        insertTable(dataPanel.table, tab)
-      }
+    #if variables are selected
+    if (is.null(svalue(dataPanel.variableSelection))==FALSE){
+      #if a by-operation should be performed
+      # || !is.Empty(as.character(svalue(dataPanel.bySelection)))
+      if (!is.Empty(svalue(dataPanel.bySelection))){
+        if (is.survey(curdat)) {
+          
+          #print(as.formula(paste("~",svalue(dataPanel.variableSelection))))
+          tab <- as.data.frame(svyby(as.formula(paste("~",svalue(dataPanel.variableSelection))),
+                                     as.formula(paste("~",svalue(dataPanel.bySelection))),
+                                     curdat, 
+                                     get(svalue(dataPanel.statisticsSelection))), stringsAsFactors=FALSE)
+          tab <- data.frame(lapply(tab, as.character), stringsAsFactors=FALSE)
+          insertTable(dataPanel.table, tab)
+        }
+        else{
+          #print(svalue(dataPanel.statisticsSelection))
+          tab <- aggregate(as.formula(paste(svalue(dataPanel.variableSelection),"~",svalue(dataPanel.bySelection))),
+                           curdat, get(svalue(dataPanel.statisticsSelection)))
+          if (svalue(dataPanel.statisticsSelection) == "mean"){
+            #se <- sd(curdat)/sqrt(length(curdat))
+            se <- aggregate(as.formula(paste(svalue(dataPanel.variableSelection),"~",svalue(dataPanel.bySelection))),
+                            curdat, FUN = function(s){sd(as.numeric(s),na.rm = TRUE)/sqrt(length(s))})
+            se <- se[,2]
+          }
+          else{
+            se <- rep(" ", nrow(tab))
+          }
+
+          insertTable(dataPanel.table, cbind(tab, se))
+        }
+      }#a single value (not a by-oepration) shall be performed
       else{
-        #print(svalue(dataPanel.statisticsSelection))
-        tab <- aggregate(as.formula(paste(svalue(dataPanel.variableSelection),"~",svalue(dataPanel.bySelection))),
-                  curdat, get(svalue(dataPanel.statisticsSelection)))
-        insertTable(dataPanel.table, cbind(tab, rep(" ", nrow(tab))))
+        if (is.survey(curdat)) {
+          #print(as.formula(paste("~",svalue(dataPanel.variableSelection))))
+#           tab <- as.data.frame(svyby(as.formula(paste("~",svalue(dataPanel.variableSelection))),
+#                                      as.formula(paste("~",svalue(dataPanel.bySelection))),
+#                                      curdat, 
+#                                      get(svalue(dataPanel.statisticsSelection))), stringsAsFactors=FALSE)
+          tab <- do.call(svalue(dataPanel.statisticsSelection), list(as.formula(paste("~",svalue(dataPanel.variableSelection))), curdat))
+          #tab <- data.frame(lapply(tab, as.character), stringsAsFactors=FALSE)
+          insertTable(dataPanel.table, data.frame(domain="all",value=coef(tab), se=SE(tab)))
+        }
+        else{
+#           tab <- aggregate(as.formula(paste(svalue(dataPanel.variableSelection),"~",svalue(dataPanel.bySelection))),
+#                            curdat, get(svalue(dataPanel.statisticsSelection)))
+          curdat <- curdat[,svalue(dataPanel.variableSelection)]
+          tab <- do.call(svalue(dataPanel.statisticsSelection), list(curdat, na.rm = TRUE))
+          if (svalue(dataPanel.statisticsSelection) == "mean"){
+            se <- sd(as.numeric(curdat), na.rm = TRUE)/sqrt(length(curdat))
+          }
+          else{
+            se <- " "
+          }
+          insertTable(dataPanel.table, data.frame(domain="all",value=tab, se=se))
+        }
       }
     }
-
   }
   
   #opens a dialog to covert a normal data.frame to a survey object
@@ -2727,7 +2770,7 @@ VIMGUI <- function(startupObject=NULL){
   dataPanel.overviewpanel <- glayout(container=dataPanel.overviewframe)
   dataPanel.variableSelection <- gdroplist("")
   dataPanel.statisticsSelection <- gdroplist(c("svymean", "svyvar", "svytotal"))
-  dataPanel.bySelection <- gdroplist("")
+  dataPanel.bySelection <- gdroplist(" ")
   size(dataPanel.variableSelection) <- c(120,-1)
   size(dataPanel.bySelection) <- c(120,-1)
   dataPanel.imputationSelection <- gradio(c("original","imputed"), horizontal=TRUE)

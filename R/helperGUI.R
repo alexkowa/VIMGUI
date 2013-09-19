@@ -132,8 +132,12 @@ isFocus <- function(x){
   gtkWidgetIsFocus(getToolkitWidget(x))
 }
 
-#tests if a string is "empty", i.e. if it only contains whitespaces
+#tests if a string is "empty", i.e. if it only contains whitespaces 
+#or is null
 is.Empty <- function(x){
+  if (is.null(x)){
+    return(TRUE)
+  }
   return(trim(x) == "")
 }
 
