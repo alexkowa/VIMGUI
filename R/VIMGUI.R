@@ -6,7 +6,7 @@
 VIMGUI <- function(startupObject=NULL){
   #REMOVE ME LATER
   #require(gWidgets)
-  #options("guiToolkit"="RGtk2")
+  options("guiToolkit"="RGtk2")
   #require(RGtk2)
   #require(Cairo)
   #
@@ -473,11 +473,13 @@ VIMGUI <- function(startupObject=NULL){
   # Data - Choose Dataset
   setDataSet <- function(...) {
     vardt <- ls(envir = .GlobalEnv, all.names=TRUE)
-    vards <- names(which(sapply(vardt, function(.x) is.data.frame(get(.x)))))
-    vards <- c(vards,names(which(sapply(vardt, function(.x) is.survey(get(.x))))))
+	vards <- character(0)
+	if (length(vardt) != 0){
+		vards <- names(which(sapply(vardt, function(.x) is.data.frame(get(.x)))))
+		vards <- c(vards,names(which(sapply(vardt, function(.x) is.survey(get(.x))))))
+	}
     if( length(vards)==0 ) {
-      #gmessage("No datasets loaded.", title="Information", icon="warning",
-      #         parent=window)
+      gmessage("No datasets loaded.", title="Information", icon="warning")
     } else {
       gbasicdialog(title="Choose Dataset",
                    x<-gdroplist(vards), parent=NULL,
@@ -1685,11 +1687,11 @@ VIMGUI <- function(startupObject=NULL){
       try({
         tgtk <- getToolkitWidget(target)
         a <- tgtk$getAllocation()
-        cdev <- dev.cur()
+        #cdev <- dev.cur()
         dev <- CairoPNG(filename="current.tmp", a$allocation$width-3, a$allocation$height-3)
         eval(plotExpr)
         dev.off(dev)
-        dev.set(cdev)
+        #dev.set(cdev)
         svalue(target) <- "current.tmp"
         file.remove("current.tmp")
       }, silent=TRUE)
