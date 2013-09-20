@@ -4,273 +4,55 @@
 # ---------------------------------------
 
 VIMGUI <- function(startupObject=NULL){
-  #REMOVE ME LATER
-  #require(gWidgets)
+  #fixate underlying GUI-Toolkit for gWidgets to GTK
+  #as there are some specific used features
   options("guiToolkit"="RGtk2")
-  #require(RGtk2)
-  #require(Cairo)
-  #
   
   ####
   #HANDLER FUNCTIONS
   
   #handler for notebook
+  #called when changing the main tab (data, imputation,...)
   mainNotebook.handler <- function(h,...){
     updatePanels(pageno=h$pageno)
   }
   
-#   #called when changing the dropdownselection for plots
-#   #adepts parameter wdigets for respective plot
-#   missVis.plotlist.handler <- function(h,...){
-#     #print(svalue(missVis.plotlist, index=TRUE))
-#     #Aggregation Plot
-#     if (svalue(missVis.plotlist, index=TRUE) == 1){
-#       enabled(missVis.booleanParam1) <- TRUE
-#       enabled(missVis.booleanParam2) <- TRUE
-#       enabled(missVis.booleanParam3) <- TRUE
-#       enabled(missVis.booleanParam4) <- TRUE
-#       enabled(missVis.booleanParam5) <- TRUE
-#       enabled(missVis.booleanParam6) <- TRUE
-#       enabled(missVis.textParam) <- FALSE
-#       enabled(missVis.dropParam) <- FALSE
-#       enabled(missVis.comboParam) <- FALSE
-#       missVis.booleanParam1[] <- "Bars"
-#       missVis.booleanParam2[] <- "Numbers"
-#       missVis.booleanParam3[] <- "Combined"
-#       missVis.booleanParam4[] <- "Sort by Missings"
-#       missVis.booleanParam5[] <- "Only Missings"
-#       missVis.booleanParam6[] <- "Sort Combinations"
-#       svalue(missVis.textParamLabel) <- ""
-#       svalue(missVis.dropParamLabel) <- ""
-#       svalue(missVis.comboParamLabel) <- ""
-#       if (existsVm("MissingsPlot.aggr")){
-#         vals <- getVm("MissingsPlot.aggr")
-#         svalue(missVis.booleanParam1) <- vals$bars
-#         svalue(missVis.booleanParam2) <- vals$numbers
-#         svalue(missVis.booleanParam3) <- vals$combined
-#         svalue(missVis.booleanParam4) <- vals$sortByMissings
-#         svalue(missVis.booleanParam5) <- vals$onlyMissings
-#         svalue(missVis.booleanParam6) <- vals$sortCombinations
-#       }
-#     }
-#     #Barplot with Missings
-#     if (svalue(missVis.plotlist, index=TRUE) == 2){
-#       enabled(missVis.booleanParam1) <- TRUE
-#       enabled(missVis.booleanParam2) <- FALSE
-#       enabled(missVis.booleanParam3) <- FALSE
-#       enabled(missVis.booleanParam4) <- FALSE
-#       enabled(missVis.booleanParam5) <- FALSE
-#       enabled(missVis.booleanParam6) <- FALSE
-#       enabled(missVis.textParam) <- TRUE
-#       enabled(missVis.dropParam) <- TRUE
-#       enabled(missVis.comboParam) <- FALSE
-#       missVis.booleanParam1[] <- "Only Missings"
-#       missVis.booleanParam2[] <- ""
-#       missVis.booleanParam3[] <- ""
-#       missVis.booleanParam4[] <- ""
-#       missVis.booleanParam5[] <- ""
-#       missVis.booleanParam6[] <- ""
-#       svalue(missVis.textParamLabel) <- "Variable of Intrest:"
-#       svalue(missVis.dropParamLabel) <- "Selection Method:"
-#       svalue(missVis.comboParamLabel) <- ""
-#     }
-#     #Histogramm of Missings
-#     if (svalue(missVis.plotlist, index=TRUE) == 3){
-#       enabled(missVis.booleanParam1) <- TRUE
-#       enabled(missVis.booleanParam2) <- FALSE
-#       enabled(missVis.booleanParam3) <- FALSE
-#       enabled(missVis.booleanParam4) <- FALSE
-#       enabled(missVis.booleanParam5) <- FALSE
-#       enabled(missVis.booleanParam6) <- FALSE
-#       enabled(missVis.textParam) <- TRUE
-#       enabled(missVis.dropParam) <- TRUE
-#       enabled(missVis.comboParam) <- TRUE
-#       missVis.booleanParam1[] <- "Only Missings"
-#       missVis.booleanParam2[] <- ""
-#       missVis.booleanParam3[] <- ""
-#       missVis.booleanParam4[] <- ""
-#       missVis.booleanParam5[] <- ""
-#       missVis.booleanParam6[] <- ""
-#       svalue(missVis.textParamLabel) <- "Variable of Intrest:"
-#       svalue(missVis.dropParamLabel) <- "Selection Method:"
-#       svalue(missVis.comboParamLabel) <- "Breaks:"
-#     }
-#     #Scatterplot Matrix
-#     if (svalue(missVis.plotlist, index=TRUE) == 4){
-#       enabled(missVis.booleanParam1) <- FALSE
-#       enabled(missVis.booleanParam2) <- FALSE
-#       enabled(missVis.booleanParam3) <- FALSE
-#       enabled(missVis.booleanParam4) <- FALSE
-#       enabled(missVis.booleanParam5) <- FALSE
-#       enabled(missVis.booleanParam6) <- FALSE
-#       enabled(missVis.textParam) <- TRUE
-#       enabled(missVis.dropParam) <- TRUE
-#       enabled(missVis.comboParam) <- FALSE
-#       missVis.booleanParam1[] <- ""
-#       missVis.booleanParam2[] <- ""
-#       missVis.booleanParam3[] <- ""
-#       missVis.booleanParam4[] <- ""
-#       missVis.booleanParam5[] <- ""
-#       missVis.booleanParam6[] <- ""
-#       svalue(missVis.textParamLabel) <- ""
-#       svalue(missVis.dropParamLabel) <- ""
-#     }
-#     #Scatterplot Matrix
-#     if (svalue(missVis.plotlist, index=TRUE) == 5){
-#       enabled(missVis.booleanParam1) <- FALSE
-#       enabled(missVis.booleanParam2) <- FALSE
-#       enabled(missVis.booleanParam3) <- FALSE
-#       enabled(missVis.booleanParam4) <- FALSE
-#       enabled(missVis.booleanParam5) <- FALSE
-#       enabled(missVis.booleanParam6) <- FALSE
-#       enabled(missVis.textParam) <- TRUE
-#       enabled(missVis.dropParam) <- TRUE
-#       enabled(missVis.comboParam) <- FALSE
-#       missVis.booleanParam1[] <- "Only Missings"
-#       missVis.booleanParam2[] <- ""
-#       missVis.booleanParam3[] <- ""
-#       missVis.booleanParam4[] <- ""
-#       missVis.booleanParam5[] <- ""
-#       missVis.booleanParam6[] <- ""
-#       svalue(missVis.textParamLabel) <- ""
-#       svalue(missVis.dropParamLabel) <- ""
-#     }
-#     #Mosaicplot of Missings
-#     if (svalue(missVis.plotlist, index=TRUE) == 6){
-#       enabled(missVis.booleanParam1) <- FALSE
-#       enabled(missVis.booleanParam2) <- FALSE
-#       enabled(missVis.booleanParam3) <- FALSE
-#       enabled(missVis.booleanParam4) <- FALSE
-#       enabled(missVis.booleanParam5) <- FALSE
-#       enabled(missVis.booleanParam6) <- FALSE
-#       enabled(missVis.textParam) <- FALSE
-#       enabled(missVis.dropParam) <- FALSE
-#       enabled(missVis.comboParam) <- FALSE
-#       missVis.booleanParam1[] <- ""
-#       missVis.booleanParam2[] <- ""
-#       missVis.booleanParam3[] <- ""
-#       missVis.booleanParam4[] <- ""
-#       missVis.booleanParam5[] <- ""
-#       missVis.booleanParam6[] <- ""
-#       svalue(missVis.textParamLabel) <- ""
-#       svalue(missVis.dropParamLabel) <- ""
-#     }
-#     #Parallelcoordinate Plot of Missings
-#     if (svalue(missVis.plotlist, index=TRUE) == 7){
-#       enabled(missVis.booleanParam1) <- FALSE
-#       enabled(missVis.booleanParam2) <- FALSE
-#       enabled(missVis.booleanParam3) <- FALSE
-#       enabled(missVis.booleanParam4) <- FALSE
-#       enabled(missVis.booleanParam5) <- FALSE
-#       enabled(missVis.booleanParam6) <- FALSE
-#       enabled(missVis.textParam) <- FALSE
-#       enabled(missVis.dropParam) <- FALSE
-#       enabled(missVis.comboParam) <- FALSE
-#       missVis.booleanParam1[] <- ""
-#       missVis.booleanParam2[] <- ""
-#       missVis.booleanParam3[] <- ""
-#       missVis.booleanParam4[] <- ""
-#       missVis.booleanParam5[] <- ""
-#       missVis.booleanParam6[] <- ""
-#       svalue(missVis.textParamLabel) <- ""
-#       svalue(missVis.dropParamLabel) <- ""
-#     }
-#     #Parallel Boxplots of Missings
-#     if (svalue(missVis.plotlist, index=TRUE) == 8){
-#       enabled(missVis.booleanParam1) <- FALSE
-#       enabled(missVis.booleanParam2) <- FALSE
-#       enabled(missVis.booleanParam3) <- FALSE
-#       enabled(missVis.booleanParam4) <- FALSE
-#       enabled(missVis.booleanParam5) <- FALSE
-#       enabled(missVis.booleanParam6) <- FALSE
-#       enabled(missVis.textParam) <- FALSE
-#       enabled(missVis.dropParam) <- FALSE
-#       enabled(missVis.comboParam) <- FALSE
-#       missVis.booleanParam1[] <- ""
-#       missVis.booleanParam2[] <- ""
-#       missVis.booleanParam3[] <- ""
-#       missVis.booleanParam4[] <- ""
-#       missVis.booleanParam5[] <- ""
-#       missVis.booleanParam6[] <- ""
-#       svalue(missVis.textParamLabel) <- ""
-#       svalue(missVis.dropParamLabel) <- ""
-#     }
-#     makeMissingsPlot()
-#   }
-#   
-#   #draws the correct missings plot
-#   makeMissingsPlot <-function(...){
-#     #print(svalue(missVis.plotlist, index=TRUE))
-#     #Aggregation Plot
-#     if (svalue(missVis.plotlist, index=TRUE) == 1){
-#       vals <- list()
-#       vals$bars <- svalue(missVis.booleanParam1)
-#       vals$numbers <- svalue(missVis.booleanParam2)
-#       vals$combined <- svalue(missVis.booleanParam3)
-#       vals$sortByMissings <- svalue(missVis.booleanParam4)
-#       vals$onlyMissings <- svalue(missVis.booleanParam5)
-#       vals$sortCombinations <- svalue(missVis.booleanParam6)
-#       aggr(getVm("activeDataSetOriginal"), bars=vals$bars, numbers=vals$numbers,
-#            combined=vals$combined, sortVars=vals$sortByMissings, 
-#            only.miss=vals$onlyMissings, sortCombs=vals$sortCombinations)
-#       putVm("MissingsPlot.aggr", vals)
-#     }
-#     #Barplot with Missings
-#     if (svalue(missVis.plotlist, index=TRUE) == 2){
-#       barMiss(getVm("activeDataSetOriginal"))
-#     }
-#     #Histogramm of Missings
-#     if (svalue(missVis.plotlist, index=TRUE) == 3){
-#       histMiss(getVm("activeDataSetOriginal"))
-#     }
-#     #Scatterplot Matrix
-#     if (svalue(missVis.plotlist, index=TRUE) == 4){
-#       marginmatrix(getVm("activeDataSetOriginal"))
-#     }
-#     #Scatterplot Matrix
-#     if (svalue(missVis.plotlist, index=TRUE) == 5){
-#       scattmatrixMiss(getVm("activeDataSetOriginal"))
-#     }
-#     #Mosaicplot of Missings
-#     if (svalue(missVis.plotlist, index=TRUE) == 6){
-#       mosaicMiss(getVm("activeDataSetOriginal"))
-#     }
-#     #Parallelcoordinate Plot of Missings
-#     if (svalue(missVis.plotlist, index=TRUE) == 7){
-#       parcoordMiss(getVm("activeDataSetOriginal"))
-#     }
-#     #Parallel Boxplots of Missings
-#     if (svalue(missVis.plotlist, index=TRUE) == 8){
-#       pbox(getVm("activeDataSetOriginal"))
-#     }
-#   }
   
-  #called by the plot notebook
+  #handler for the plot notebook 
+  #called when changing the tabs for the different plots
   imputationPlotHandler <- function(h,...){
     makeImputationPlot(h$pageno)
   }
   
-  #draws the correctplot
-  #called from all handler of the plot notebook
+  #main method for drawing the plot graphics
+  #is called in cases where the plot graphic needs a redraw
+  #like switching to the plot tab, switching the plot type
+  #or change some parameters
   makeImputationPlot <- function(index = svalue(impVis.plotBook), savePlot=FALSE){
+	#select which dataset is plotted (with or without imputed values) depending on the 
+	#users choice in the plot tab
     if (svalue(impVis.plotImputed) == "original"){
       plotData <- getVm("activeDataSetOriginal")
+	  #use no delimiter in case of not imputed data to prevent unnecessary warnings
       delimiter <- NULL
     }
     else{
       plotData <- getVm("activeDataSetImputed")
       delimiter <- "_imp"
     }
+	
+	#create plot depending on which tab is active
+	#index is normally the index of the plot tab
     if (index == 1){
+			#use the buffered plot function to create a aggr-plot
       bufferedPlot(aggr(plotData, bars=svalue(impVis.aggr.bars), numbers = svalue(impVis.aggr.numbers),
                         prop = svalue(impVis.aggr.prop), combined = svalue(impVis.aggr.combined),
                         only.miss = svalue(impVis.aggr.only.miss), sortVars = svalue(impVis.aggr.sortVars),
                         sortCombs = svalue(impVis.aggr.sortCombs),
                         col = getVm("plotColors"), delimiter=delimiter), savePlot=savePlot)
-      
     }
     else if (index == 2){
-      #print(svalue(impVis.barMiss.pos, index=TRUE))
+			#use the buffered plot function to create a barMiss-plot
       bufferedPlot(barMiss(plotData, pos = svalue(impVis.barMiss.pos, index=TRUE), 
               selection = svalue(impVis.barMiss.selection),
               only.miss = svalue(impVis.barMiss.only.miss),
@@ -278,6 +60,8 @@ VIMGUI <- function(startupObject=NULL){
                            delimiter=delimiter), savePlot=savePlot)
     }
     else if (index == 3){
+			#use the buffered plot function to create a histMiss-plot
+			#select if breaks represents the number of breaks or a algorithm
       breaks <- svalue(impVis.histMiss.breaks)
       if (isNumber(breaks) == TRUE){
         breaks <- as.numeric(breaks)
@@ -290,35 +74,37 @@ VIMGUI <- function(startupObject=NULL){
                             delimiter=delimiter), savePlot=savePlot)
     }
     else if (index == 4){
+			#use the buffered plot function to create a marginmatrix-plot
       drawNames <- as.character(svalue(impVis.marginMatrix.plotvars))
+			#remove the delimiter variables from the actual variable selection
       impNames <- intersect(sapply(drawNames, FUN=function(s) paste(s,"_imp", sep="")),
                             names(plotData))
-      #print(c(drawNames, impNames))
       drawData <- plotData[,c(drawNames, impNames)]
-      
       bufferedPlot(marginmatrix(drawData, delimiter=delimiter,
                    col = getVm("plotColors"), alpha = getVm("plotAlpha")), savePlot=savePlot)
     }
     else if (index == 5){
+			#use the buffered plot function to create a scattmatrixMiss-plot
       plotvars <- NULL
+			#prevent error if no variables or highlights are selected
       v <- as.character(svalue(impVis.scattmatrixMiss.plotvars))
       if (length(v) > 0){
         plotvars <- v
       }
-      
       highlight <- NULL
       v <- as.character(svalue(impVis.scattmatrixMiss.highlight))
       if (length(v) > 0){
         highlight <- v
       }
-      
       bufferedPlot(scattmatrixMiss(plotData,
-                      col = getVm("plotColors"), alpha = getVm("plotAlpha"),interactive=FALSE,
-                                   delimiter=delimiter, plotvars=plotvars, highlight=highlight,
-                                   selection=svalue(impVis.scattmatrixMiss.selection),
-                                   diagonal=svalue(impVis.scattmatrixMiss.diagonal)), savePlot=savePlot)
+																	col = getVm("plotColors"), alpha = getVm("plotAlpha"),interactive=FALSE,
+                                  delimiter=delimiter, plotvars=plotvars, highlight=highlight,
+                                  selection=svalue(impVis.scattmatrixMiss.selection),
+                                  diagonal=svalue(impVis.scattmatrixMiss.diagonal)), savePlot=savePlot)
     }
     else if (index == 6){
+			#use the buffered plot function to create a mosaicMiss-plot
+			#prevent error if no variables or highlights are selected
       highlight <- as.character(svalue(impVis.mosaicMiss.highlight))
       if (length(highlight) < 1){
         highlight <- NULL
@@ -327,13 +113,14 @@ VIMGUI <- function(startupObject=NULL){
       if (length(plotvars) < 1){
         plotvars <- NULL
       }
-      #print(plotvars)
       bufferedPlot(mosaicMiss(plotData, highlight=highlight, plotvars=plotvars, 
-                 selection=svalue(impVis.mosaicMiss.selection),
-                 col = getVm("plotColors"),
-                              delimiter=delimiter), savePlot=savePlot)
+									selection=svalue(impVis.mosaicMiss.selection),
+									col = getVm("plotColors"),
+									delimiter=delimiter), savePlot=savePlot)
     }
     else if (index == 7){
+			#use the buffered plot function to create a parcoordMiss-plot
+			#prevent error if no variables or highlights are selected
       highlight <- as.character(svalue(impVis.parcoordMiss.highlight))
       if (length(highlight) < 1){
         highlight <- NULL
@@ -349,6 +136,7 @@ VIMGUI <- function(startupObject=NULL){
                                 delimiter=delimiter), savePlot=savePlot)
     }
     else if (index == 8){
+			#use the buffered plot function to create a pbox-plot
       bufferedPlot(pbox(plotData, pos=svalue(impVis.pbox.pos, index=TRUE),
            selection = svalue(impVis.pbox.selection),
            numbers = svalue(impVis.pbox.numbers),
@@ -356,7 +144,7 @@ VIMGUI <- function(startupObject=NULL){
                         delimiter=delimiter), savePlot=savePlot)
     }
     else if (index == 9){
-      #remove supress after somebody removed that anoying deprecated gamma warning
+      #use the buffered plot function to create a matrixplot-plot
       suppressWarnings({
         bufferedPlot(matrixplot(plotData, sortby=svalue(impVis.matrixplot.sortby, index=TRUE),
                                 col = getVm("plotColors"),interactive=FALSE,
@@ -366,27 +154,39 @@ VIMGUI <- function(startupObject=NULL){
   }
   
   #called after using the contextual menu items of the plot window
-  #uses the regular plot function but executes different Cairo modes 
-  #to save PDF, PNG,...
+  #uses the regular plot function but saves the created content 
+	#to a permanent file on the hard-drive
   savePlotToFile <- function(FileFormat="PNG"){
+		#extract the size of the plot inside the window
+		#mostly to preserve the proportion of width and height
     tgtk <- getToolkitWidget(impVis.plot)
     a <- tgtk$getAllocation()
+		#choose the file format the user wants
     if (FileFormat=="PNG"){
+			#opens a file save dialog for selected file format
       location <- gfile("Save as PNG", type="save", filter=list("PNG","png"))
+			#user input was OK
       if (!is.na(location)){
+				#substitute missing file-extension
         if (!endsWithText(location,c("PNG","png"))){
           location <- paste(location,".png",sep="")
         }
+				#use Cairo-function for saving 
         dev <- CairoPNG(filename=location, width=a$allocation$width, height=a$allocation$height)
         makeImputationPlot(savePlot=TRUE)
         dev.off(dev)
       }
     }
     else if (FileFormat=="PDF"){
+			#opens a file save dialog for selected file format
       location <- gfile("Save as PDF", type="save", filter=list("PDF","pdf"))
+			#user input was OK
       if (!is.na(location)){
+				#pdf needs only proportion of weight and height not pixel-size
+				#but absolute value of size changes font size
         w <- a$allocation$width / max(a$allocation$width,a$allocation$height)
         h <- a$allocation$height / max(a$allocation$width,a$allocation$height)
+				#substitute missing file-extension
         if (!endsWithText(location,c("PDF","pdf"))){
           location <- paste(location,".pdf",sep="")
         }
@@ -396,8 +196,11 @@ VIMGUI <- function(startupObject=NULL){
       }
     }
     else if (FileFormat=="PS"){
+			#opens a file save dialog for selected file format
       location <- gfile("Save as PS", type="save", filter=list("PS","ps"))
+			#user input was OK
       if (!is.na(location)){
+				#substitute missing file-extension
         if (!endsWithText(location,c("PS","ps"))){
           location <- paste(location,".ps",sep="")
         }
@@ -407,8 +210,11 @@ VIMGUI <- function(startupObject=NULL){
       }
     }
     else if (FileFormat=="JPEG"){
+			#opens a file save dialog for selected file format
       location <- gfile("Save as JPEG", type="save", filter=list("JPEG","jpeg","jpg","JPG"))
+			#user input was OK
       if (!is.na(location)){
+				#substitute missing file-extension
         if (!endsWithText(location,c("JPEG","jpeg","jpg","JPG"))){
           location <- paste(location,".jpeg",sep="")
         }
@@ -418,10 +224,15 @@ VIMGUI <- function(startupObject=NULL){
       }
     }
     else if (FileFormat=="SVG"){
+			#opens a file save dialog for selected file format
       location <- gfile("Save as SVG", type="save", filter=list("SVG","svg"))
+			#user input was OK
       if (!is.na(location)){
+				#svg needs only proportion of weight and height not pixel-size
+				#but absolute value of size changes font size
         w <- a$allocation$width / max(a$allocation$width,a$allocation$height)
         h <- a$allocation$height / max(a$allocation$width,a$allocation$height)
+				#substitute missing file-extension
         if (!endsWithText(location,c("SVG","svg"))){
           location <- paste(location,".svg",sep="")
         }
@@ -434,14 +245,23 @@ VIMGUI <- function(startupObject=NULL){
   
   #sets a new dataset as active i.e. sets the activeDataSetOriginal and
   #activeDataSetImputed Variables
-  #after that inits the GUI with the new values
+  #after that initializes the GUI with the new values (meaning puts values in
+	#different tables and widgets, resets settings, ...)
+	#firstPage 	...  	resets the main notebook
+	#prepare 		...		used after setting dataset after using the prepare command
+	#									doesn't remove the old dataset to enable usage of undo
+	#loadScript ...		R-source used to load variable, first line in script dialog
+	#parent			...		parent for the small dialog windows
+	#adjustTypes...		should adjusting of types be performed
   setActiveDataset <- function(x, firstPage=TRUE, prepare=FALSE, loadScript="", parent=NULL,
                                adjustTypes=TRUE){
     if (firstPage){
       svalue(mainNotebook) <- 1
     }
     if(adjustTypes) x <- adjustTypesDialog(x)
+		#open loading window and save its ID for later
     putVm("loadingWindowID",loadingWindow(parent=parent))
+		#reset different settings
     putVm("activeDataSetOriginal", x)
     putVm("activeDataSetImputed", NULL)
     enabled(menu.Undo) <- FALSE
@@ -455,13 +275,17 @@ VIMGUI <- function(startupObject=NULL){
     
     initPanels()
     updatePanels(firstTime=TRUE)
+		#destroy the loading window after loading is done
     dispose(getVm("loadingWindowID"))
   }
   
-  # Data - Load Dataset
+  #loads a R-dataset from a file
+	#used after clicking on the corresponding menu entry
   loadDataSet <- function(...) {
+		#open file dialog
     xname <- gfile("Select file to load", parent=window, type="open" ,filter=list("R-Data"=list(patterns=c("*.rda", "*.RData","*.RDA","*.rdata","*.RDATA")), "All files" = list(patterns = c("*"))))
-    if (is.na(xname) == FALSE) {
+    #is valid name load to global name space and open select dataset window
+		if (is.na(xname) == FALSE) {
       putVm("importFilename",xname)
       load(xname, envir=.GlobalEnv)
       setDataSet()
@@ -470,46 +294,50 @@ VIMGUI <- function(startupObject=NULL){
   
 
   
-  # Data - Choose Dataset
+  #lets the user select a dataset from the global environment to load it into the application
+	#used after clicking on the corresponding menu entry
   setDataSet <- function(...) {
+		#get variable names in global environment
     vardt <- ls(envir = .GlobalEnv, all.names=TRUE)
-	vards <- character(0)
-	if (length(vardt) != 0){
-		vards <- names(which(sapply(vardt, function(.x) is.data.frame(get(.x)))))
-		vards <- c(vards,names(which(sapply(vardt, function(.x) is.survey(get(.x))))))
-	}
+		vards <- character(0)
+		#filter to only use dataframes and surveys
+		if (length(vardt) != 0){
+			vards <- names(which(sapply(vardt, function(.x) is.data.frame(get(.x)))))
+			vards <- c(vards,names(which(sapply(vardt, function(.x) is.survey(get(.x))))))
+		}
+		#if there aren't any usable objects inform the user which error
     if( length(vards)==0 ) {
       gmessage("No datasets loaded.", title="Information", icon="warning")
     } else {
+			#present the user with possible objects
       gbasicdialog(title="Choose Dataset",
                    x<-gdroplist(vards), parent=NULL,
                     handler=function(x, ...) {
-                      #ActiveDataSet(svalue(x$obj))
-                      #putVm("activeDataSetOriginal", get(svalue(x$obj)))
-                      #putVm("activeDataSetImputed", NULL)
-                      #str(getVm("activeDataSetOriginal"))
-                      #initPanels()
-                      #updatePanels()
+											#set new dataset after confirmation by user
                       setActiveDataset(get(svalue(x$obj)), parent=mainWindow,
                                        , loadScript=paste("activedataset <- ",svalue(x$obj)))
                     })
     }
   }
   
-  # Data - Save Dataset To - File
+  #lets the user save the current active dataset to a file
+	#called after clicking the corresponding menu item
   saveToFile <- function(...) {
+		#there is no imputed data -> save original
     if( is.null(getVm("activeDataSetImputed")) == FALSE) {
       xname <- gfile("Choose a file to save the Dataset", type="save", parent=window)
       if( xname != "" ) {
         data <- getVm("activeDataSetImputed")
         save(data, file=paste(xname,".RData", sep=""))
       }
+			#there is imputed data -> save imputed data
     } else if (is.null(getVm("activeDataSetOriginal")) == FALSE){
       xname <- gfile("Choose a file to save the Dataset", type="save", parent=window)
       if( xname != "" ) {
         data <- getVm("activeDataSetOriginal")
         save(data, file=paste(xname,".RData", sep=""))
       }
+			#catch possible error situation by not allowing to save empty data
     } else {
       gmessage("No active Dataset found.", title="Information", icon="warning",
                parent=window)
@@ -517,28 +345,47 @@ VIMGUI <- function(startupObject=NULL){
   
   }
   
+	#let the user save the currently active dataset to a variable in the global environment
+	#called after clicking the corresponding menu entry
   saveToVariable <- function(...){
+		#find and filter already exising variable names
+    #get variable names in global environment
     vardt <- ls(envir = .GlobalEnv, all.names=TRUE)
-    vards <- names(which(sapply(vardt, function(.x) is.data.frame(get(.x)))))
-    vards <- c(vards,names(which(sapply(vardt, function(.x) is.survey(get(.x))))))
-    saveVariable.window <- gwindow("Save Dataset to Variable", width=200, height=75)
+    vards <- character(0)
+    #filter to only use dataframes and surveys
+    if (length(vardt) != 0){
+      vards <- names(which(sapply(vardt, function(.x) is.data.frame(get(.x)))))
+      vards <- c(vards,names(which(sapply(vardt, function(.x) is.survey(get(.x))))))
+    }
+    else{
+      vards <- " "
+    }
+		#build small window with a combobox and two buttons for accept and discard
+    saveVariable.window <- gwindow("Save Dataset to Variable", width=300, height=75)
     gg <- glayout(container=saveVariable.window)
     saveVariable.list <- gcombobox(c("",vards), editable=TRUE)
     saveVariable.accept <- gbutton(" Accept")
     saveVariable.discard <- gbutton(" Discard")
-    gg[1,1:2] <- saveVariable.list
+    gg[1,1:2, expand=TRUE] <- saveVariable.list
     gg[2,1] <- saveVariable.discard 
     gg[2,2] <- saveVariable.accept
+		#destroy window when clicking discard button
     addHandlerClicked(saveVariable.discard, handler=function(h,...){
       dispose(saveVariable.window)
     })
+		#accept button handler
     addHandlerClicked(saveVariable.accept, handler=function(h,...){
+			#get save-to name and original data
       varName <- svalue(saveVariable.list)
       dataObject <- getVm("activeDataSetOriginal")
+			#is imputed data exists ask user hwo to proceed
       if (is.null(getVm("activeDataSetImputed")) == FALSE){
         w <- gconfirm("Do you want to use the imputed values?", title="Imputed Values", icon="question")
+				#user wants to save imputed data
         if (w == TRUE){
           dataObject <- getVm("activeDataSetImputed")
+					#is dataset is survey remove the delimtier variables, as they are possible interfering 
+					#which the survey methods
           if (is.survey(dataObject)){
             dataobject <- dataObject$variables
             dataobject <- dataobject[,grep("_imp", colnames(dataobject), invert=TRUE)]
@@ -546,7 +393,8 @@ VIMGUI <- function(startupObject=NULL){
           }
         }
       }
-      
+      #if user selected a name which already existed in the global environment
+			#ask the user if he wants to override it
       if( exists(varName, envir=.GlobalEnv) ) {
                 gconfirm("Variable already exists, do you want to replace it?",
                     title="Information",
@@ -565,7 +413,8 @@ VIMGUI <- function(startupObject=NULL){
     })
   }
   
-  # Waiting Dialog
+  #a small dialog which a "Please Wait"-Text.
+	#always called if something needs a few seconds to build up (loading data, init widgets,...)
   WaitingDialog <- function(parent, text="<b><big>Importing Data, Please Wait!</big></b>", 
                             header="Importing!", Parent=NULL){
     window <- gwindow(header, parent=Parent, width=100, height=50)
