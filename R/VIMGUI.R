@@ -1667,11 +1667,13 @@ VIMGUI <- function(startupObject=NULL){
     script.window <- gwindow("Script View", width=1024, height=300)
     script.code <- gtext(container=script.window)
     hist <- getVm("ScriptHistory")
+    script_text <- character(0)
     for (line in hist){
       if (!isEmpty(line)){
-        insert(script.code, as.character(line))
+        script_text <- paste(script_text,as.character(line), sep="\n")
       }
     }
+    svalue(script.code) <- script_text
   }
   
   #small helper which simplifies the addition of a new line of code
