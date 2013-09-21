@@ -942,9 +942,10 @@ VIMGUI <- function(startupObject=NULL){
     buttonHandler()
   }
   
-  # Data - Export - Export SPSS
+  #opens a small window for exporting SPSS files
+	#called after clicking the corresponding menu entry
   exportSPSS <- function(...){
-    
+    #init window and different variables
     importDialog <- gwindow("Export SPSS", parent=window, width=100, height=100)
     putVm("importDialog",importDialog)
     putVm("dframe", NULL)
@@ -955,6 +956,8 @@ VIMGUI <- function(startupObject=NULL){
     enabled(datafilename) <- FALSE
     enabled(codefilename) <- FALSE
     
+		#handler for choose file button
+		#opens file selection dialog
     databuttonHandler <- function(...){
       gfile(text = "Save Data File", type = "save", handler=function(h,...){
         if(grepl("^.*\\.(dat)$", h$file)){
@@ -966,6 +969,8 @@ VIMGUI <- function(startupObject=NULL){
       })
     }
     
+		#handler for choose codebook file button
+		#opens file selection dialog
     codebuttonHandler <- function(...){
       gfile(text = "Save SPS File", type = "save", filter=list(".sps"=list("*.sps")),handler=function(h,...){
         if(grepl("^.*\\.(sps|SPS)$", h$file)){
@@ -982,21 +987,24 @@ VIMGUI <- function(startupObject=NULL){
     codefilebutton <- gbutton("...", handler=codebuttonHandler)
     csvaccept <- gbutton("Accept", handler=function(...){
       dataobject <- getVm("activeDataSetOriginal")
+			#if imputed data exists ask user if he wants to export it
       if (is.null(getVm("activeDataSetImputed")) == FALSE){
         w <- gconfirm("Do you want to use the imputed values?", title="Imputed Values", icon="question")
         if (w == TRUE){
           dataobject <- getVm("activeDataSetImputed")
         }
       }
+			#for surveys only export the actual data
       if (is.survey(dataobject)){
         dataobject <- dataobject$variables
       }
       dataobject <- dataobject[,grep("_imp", colnames(dataobject), invert=TRUE)]
+			#acutal export
       tryCatch({write.foreign(dataobject, datafile=svalue(datafilename),
                               codefile=svalue(codefilename),
                               package = "SPSS")
                 putVm("exportFileName", svalue(datafilename))
-                #exportReport(version=svalue(radio.html, index=TRUE))
+                #create command line for script window
                 cmdimp <- paste("write.foreign(activedataset, datafile='",gsub("\\\\","/",svalue(datafilename)),"',",
                                               "codefile='",gsub("\\\\","/",svalue(codefilename)),"',",
                                               "package = 'SPSS')",sep="")
@@ -1006,37 +1014,27 @@ VIMGUI <- function(startupObject=NULL){
                                           icon="error")})
       dispose(importDialog)
     })
+		#more layout and init
     csvdiscard <- gbutton("Discard ", handler=function(...){dispose(importDialog)})
-    
-    #record export
-    #frame.html <- gframe("HTML report")
-    #radio.html <- gradio(c("none", "Full report (for internal use)","Short report (for external use)"), 
-    #                     horizontal=TRUE, container=frame.html)
-    
     fdata <- gframe("Choose Data-File (Contains exported data as freetext):")
     gdata <- ggroup(horizontal=TRUE, container=fdata)
     add(fdata, datafilename, expand=TRUE)
     add(fdata, datafilebutton)
     layout[1,1:7] <- fdata
-    
     fcode <- gframe("Choose Code-File (Contains SPSS Code for import):")
     gcode <- ggroup(horizontal=TRUE, container=fcode)
     add(fcode, codefilename, expand=TRUE)
     add(fcode, codefilebutton)
     layout[2,1:7] <- fcode
-    #layout[3, 1:7] <- frame.html
     layout[4,6, expand=FALSE] <- csvaccept
     layout[4,7, expand=FALSE] <- csvdiscard
     add(importDialogFrame, layout, expand=TRUE)
-    #add(importDialogFrame, statusbar)
-    
-    
-    
   }
   
-  # Data - Export - Export STATA
+  #creates a small window for exporting STATA files
+	#called after clicking the corresponding menu entry
   exportSTATA <- function(...){
-    
+		#init window and variables
     importDialog <- gwindow("Export STATA", parent=window, width=100, height=100)
     putVm("importDialog",importDialog)
     putVm("dframe", NULL)
@@ -1048,6 +1046,8 @@ VIMGUI <- function(startupObject=NULL){
     check.dates <- gcheckbox("convert dates to STATA-dates", checked=TRUE)
     combo.convert.factors <- gcombobox(c("labels","string","numeric","codes"))
     
+		#handler for the file choose button
+		#open file selection dialog
     buttonHandler <- function(...){
       gfile(text = "Save STATA File", type = "save", filter=list(".dta"=list("*.dta")),handler=function(h,...){
         if(grepl("^.*\\.(dta|DTA)$", h$file)){
@@ -1061,41 +1061,40 @@ VIMGUI <- function(startupObject=NULL){
     
     #setup stata export gui
     filebutton <- gbutton("...", handler=buttonHandler)
+		#handler for accept button
     csvaccept <- gbutton("Accept", handler=function(...){
       dataobject <- getVm("activeDataSetOriginal")
+			#if imputed data exists, ask user how to proceed
       if (is.null(getVm("activeDataSetImputed")) == FALSE){
         w <- gconfirm("Do you want to use the imputed values?", title="Imputed Values", icon="question")
         if (w == TRUE){
           dataobject <- getVm("activeDataSetImputed")
         }
       }
+			#for surveys only export actual data
       if (is.survey(dataobject)){
         dataobject <- dataobject$variables
       }
       dataobject <- dataobject[,grep("_imp", colnames(dataobject), invert=TRUE)]
+			#actual export
       tryCatch({write.dta(dataobject, file=svalue(filename),
                           version=as.numeric(svalue(edit.version)),
                           convert.dates=svalue(check.dates),
                           convert.factors=svalue(combo.convert.factors))
                 putVm("exportFileName", svalue(filename))
+								#create command line script for script browser
                 cmdimp <- paste("write.dta(activedataset, file='",gsub("\\\\","/",svalue(filename)),"',",
                                 "version=",as.numeric(svalue(edit.version)),",",
                                 "convert.dates=",svalue(check.dates),",",
                                 "convert.factors = '",svalue(combo.convert.factors),"')",sep="")
                 addScriptLine(cmdimp)
-                #exportReport(version=svalue(radio.html, index=TRUE))
                 },
                error=function(e){gmessage(paste("There was a problem while exporting your data: '",e,"'"), "Problem",
                                           icon="error")})
       dispose(importDialog)
     })
+		#more layout and init
     csvdiscard <- gbutton("Discard ", handler=function(...){dispose(importDialog)})
-    
-    #record export
-    #frame.html <- gframe("HTML report")
-    #radio.html <- gradio(c("none", "Full report (for internal use)","Short report (for external use)"), 
-    #                     horizontal=TRUE, container=frame.html)
-    
     ftop <- gframe("Choose STATA-File:")
     gtop <- ggroup(horizontal=TRUE, container=ftop)
     add(ftop, filename, expand=TRUE)
@@ -1109,19 +1108,15 @@ VIMGUI <- function(startupObject=NULL){
     glayout[2,2, anchor=c(0,0)] <- glabel("handle factors as:")
     glayout[2,6, expand=FALSE] <- combo.convert.factors
     layout[2:3, 1:7] <- fparams
-    #layout[4, 1:7] <- frame.html
     layout[5,6, expand=FALSE] <- csvaccept
     layout[5,7, expand=FALSE] <- csvdiscard
     add(importDialogFrame, layout, expand=TRUE)
-    #add(importDialogFrame, statusbar)
-    
-    
-    
   }
   
-  # Data - Export - Export SAS
+  #opens small window for exporting SAS files
+	#called after clicking the corresponding menu item 	
   exportSAS <- function(...){
-    
+    #init window and variables
     importDialog <- gwindow("Export SAS", parent=window, width=100, height=100)
     putVm("importDialog",importDialog)
     putVm("dframe", NULL)
@@ -1134,6 +1129,8 @@ VIMGUI <- function(startupObject=NULL){
     edit.dataname <- gedit("rdata")
     combo.validvarname <- gcombobox(c("<=6",">=7"), selected=2)
     
+		#handler for the data file chooser
+		#opens file selection dialog
     databuttonHandler <- function(...){
       gfile(text = "Save Data File", type = "save", handler=function(h,...){
         if(grepl("^.*\\.(dat)$", h$file)){
@@ -1144,7 +1141,9 @@ VIMGUI <- function(startupObject=NULL){
         }
       })
     }
-    
+		
+    #handler for the code file chooser
+		#opens file selection dialog
     codebuttonHandler <- function(...){
       gfile(text = "Save SAS File", type = "save", filter=list(".sas"=list("*.sas")),handler=function(h,...){
         if(grepl("^.*\\.(sas|SAS)$", h$file)){
@@ -1159,18 +1158,22 @@ VIMGUI <- function(startupObject=NULL){
     #setup sas export gui
     datafilebutton <- gbutton("...", handler=databuttonHandler)
     codefilebutton <- gbutton("...", handler=codebuttonHandler)
+		#accept button handler
     csvaccept <- gbutton("Accept", handler=function(...){
       dataobject <- getVm("activeDataSetOriginal")
+			#in case of imputed data export ask user which to export
       if (is.null(getVm("activeDataSetImputed")) == FALSE){
         w <- gconfirm("Do you want to use the imputed values?", title="Imputed Values", icon="question")
         if (w == TRUE){
           dataobject <- getVm("activeDataSetImputed")
         }
       }
+			#for surveys only save the actual data
       if (is.survey(dataobject)){
         dataobject <- dataobject$variables
       }
       dataobject <- dataobject[,grep("_imp", colnames(dataobject), invert=TRUE)]
+			#actual export
       tryCatch({version <- paste("V",substr(svalue(combo.validvarname), 3,3), sep="")
                 write.foreign(dataobject, datafile=svalue(datafilename),
                               codefile=svalue(codefilename),
@@ -1178,24 +1181,19 @@ VIMGUI <- function(startupObject=NULL){
                               dataname = svalue(edit.dataname),
                               validvarname = version)
                 putVm("exportFileName", svalue(datafilename))
+								#create command line script for script browser
                 cmdimp <- paste("write.foreign(activedataset, datafile='",gsub("\\\\","/",svalue(datafilename)),"',",
                                 "codefile='",gsub("\\\\","/",svalue(codefilename)),"',",
                                 "package = 'SAS', validvarname='",version,"')",sep="")
                 addScriptLine(cmdimp)
-                #exportReport(version=svalue(radio.html, index=TRUE))
                 },
                error=function(e){gmessage(paste("There was a problem while exporting your data: '",e,"'"), "Problem",
                                           icon="error")})
       dispose(importDialog)
     })
+		#more layout and init
     csvdiscard <- gbutton("Discard ", handler=function(...){dispose(importDialog)})
-    
-    #record export
-    #frame.html <- gframe("HTML report")
-    #radio.html <- gradio(c("none", "Full report (for internal use)","Short report (for external use)"), 
-    #                     horizontal=TRUE, container=frame.html)
-    
-    fdata <- gframe("Choose Data-File (Contains exported data as freetext):")
+    fdata <- gframe("Choose Data-File (Contains exported data as free-text):")
     gdata <- ggroup(horizontal=TRUE, container=fdata)
     add(fdata, datafilename, expand=TRUE)
     add(fdata, datafilebutton)
@@ -1214,20 +1212,18 @@ VIMGUI <- function(startupObject=NULL){
     glayout[2,1, anchor=c(-1,0)] <- glabel("SAS version :")
     glayout[2,2, expand=FALSE] <- combo.validvarname
     layout[3:4, 1:7] <- fparams
-    #layout[5, 1:7] <- frame.html
     layout[6,6, expand=FALSE] <- csvaccept
     layout[6,7, expand=FALSE] <- csvdiscard
     add(importDialogFrame, layout, expand=TRUE)
-    #add(importDialogFrame, statusbar)
-    
-    
-    
   }
   
+	#handler for the main notebook
+	#does some init and update (e.i. plots)
   #called after switching the main tabs 
   updatePanels <- function(pageno=svalue(mainNotebook), firstTime=FALSE){
-    #print("test")
+		#data tab
     if(pageno==1){
+			#allow user different functionality for imputed data
       if (is.null(getVm("activeDataSetImputed"))) {
         svalue(dataPanel.imputationSelection) <- "original"
         enabled(dataPanel.imputationSelection) <- FALSE
@@ -1237,13 +1233,14 @@ VIMGUI <- function(startupObject=NULL){
         enabled(dataPanel.imputationSelection) <- TRUE
       }
       #adapt widgets above table to dataset
+			#block change handler to improve performance
       blockHandler(dataPanel.variableSelection, dataPanel.variableSelectionHandler)
       blockHandler(dataPanel.bySelection, dataPanel.bySelectionHandler)
       blockHandler(dataPanel.statisticsSelection, dataPanel.statisticsSelectionHandler)
       dataPanel.variableSelection[]<- getVariableNames(getVm("activeDataSetOriginal"))
       dataPanel.bySelection[]<- c(" ", getVariableNames(getVm("activeDataSetOriginal")))
       svalue(dataPanel.bySelection) <- " "
-      #change available statistics depending on data is survey or nor
+      #change available statistics depending on data is survey or not
       if (is.survey(getVm("activeDataSetOriginal"))){
         dataPanel.statisticsSelection[] <- c("svymean", "svyvar", "svytotal")
         svalue(dataPanel.statisticsSelection) <- "svymean"
@@ -1252,28 +1249,24 @@ VIMGUI <- function(startupObject=NULL){
         dataPanel.statisticsSelection[] <- c("mean", "var")
         svalue(dataPanel.statisticsSelection) <- "mean"
       }
+			#if is first pass (after program start) make additional inits
       if (firstTime == TRUE){
         svalue(dataPanel.variableSelection, index=TRUE) <- 1
         svalue(dataPanel.bySelection) <- " "
         dataPanelChangeHandler()
       }
+			#reinstate different handlers
       unblockHandler(dataPanel.statisticsSelection, dataPanel.statisticsSelectionHandler)
       unblockHandler(dataPanel.variableSelection, dataPanel.variableSelectionHandler)
       unblockHandler(dataPanel.bySelection, dataPanel.bySelectionHandler)
     }
-#     if(pageno==2){
-#       visible(impVis.plot) <- FALSE
-#       visible(missVis.plot) <- TRUE
-#       #hist(rnorm(100))
-#       missVis.plotlist.handler()
-#       #makeMissingsPlot()
-#     }
+		#imputation tab
     if(pageno==2){
-      #MAGIC FOR IMPUTATION!
-      #DO SOMETHING!
+      #for possible future additions
     }
+		#visualization tab
     if(pageno==3){
-      #visible(missVis.plot) <- FALSE
+			#different settings if imputed data is available
       if (is.null(getVm("activeDataSetImputed"))) {
         svalue(impVis.plotImputed) <- "original"
         enabled(impVis.plotImputed) <- FALSE
@@ -1282,34 +1275,35 @@ VIMGUI <- function(startupObject=NULL){
         svalue(impVis.plotImputed) <- "imputed"
         enabled(impVis.plotImputed) <- TRUE
       }
+			#make sure that no empty plot window exists
       visible(impVis.plot) <- TRUE
       makeImputationPlot()
     }
   }
   
   #adaptes all widgets on all panels to a new dataset
+	#called while loading a new dataset (setActiveDataset())
+	#fills a lot of tables with the possible variable names of the dataset
   initPanels <- function(){
     clearTable(dataPanel.table)
     
-    #imputationpanel
+    #init the imputation tab
     variables <- getVariableNames(getVm("activeDataSetOriginal"))
     variables <- data.frame(var=variables)
     insertTable(imputation.hotdeck.variable, variables)
     insertTable(imputation.hotdeck.ord_var, variables)
     insertTable(imputation.hotdeck.domain_var, variables)
     insertTable(imputation.irmi.variable, variables)
-    #insertTable(imputation.irmi.mixed, variables)
     insertTable(imputation.irmi.count, variables)
     insertTable(imputation.kNN.variable, variables)
     insertTable(imputation.kNN.dist_var, variables)
     insertTable(imputation.regression.variables, variables)
-    #insertTable(imputation.kNN.mixed, variables)
     clearTable(imputation.kNN.mixed)
     clearTable(imputation.irmi.mixed)
-    #imputation plot
-    #str(handlerList)
+    
+		#init the plot tab
+		#block handlers to improve performance
     sapply(handlerList, FUN=function(s){blockHandler(s[[1]],s[[2]])})
-    #TODO: FIND OUT WHY THIS SOMETIMES DOESNT WORK!
     try(impVis.barMiss.pos[] <- variables, silent = TRUE)
     try(impVis.histMiss.pos[] <- variables, silent = TRUE)
     try(impVis.pbox.pos[] <- variables, silent = TRUE)
@@ -1321,6 +1315,8 @@ VIMGUI <- function(startupObject=NULL){
     insertTable(impVis.scattmatrixMiss.highlight, variables)
     insertTable(impVis.scattmatrixMiss.plotvars, variables)
     insertTable(impVis.marginMatrix.plotvars, variables)
+		#default shown variables for scatterplot matrices
+		#the first 5 existing variables
     svalue(impVis.marginMatrix.plotvars, index=TRUE) <- 1:min(dim(variables)[1],5)
     svalue(impVis.scattmatrixMiss.plotvars, index=TRUE) <- 1:min(dim(variables)[1],5)
     insertTable(impVis.mosaicMiss.highlight, variables)
@@ -1328,6 +1324,9 @@ VIMGUI <- function(startupObject=NULL){
     insertTable(impVis.parcoordMiss.highlight, variables)
     insertTable(impVis.parcoordMiss.plotvars, variables)
     svalue(impVis.parcoordMiss.plotvars, index=TRUE) <- 1:min(dim(variables)[1],5)
+		#choose default shown variables for mosaic plot
+		#heuristic: the first 2 discrete (less then 25 different values) variables
+		#otherwise just the first two variables
     dat <- getVm("activeDataSetOriginal")
     if(is.survey(dat)){
       dat <- dat$variables
@@ -1341,6 +1340,7 @@ VIMGUI <- function(startupObject=NULL){
       vc <- vc[1:2]
     }
     svalue(impVis.mosaicMiss.plotvars, index=TRUE) <- vc
+		#reinstate handlers
     sapply(handlerList, FUN=function(s){unblockHandler(s[[1]],s[[2]])})
     
     #default focus for regression tabs
@@ -1351,7 +1351,6 @@ VIMGUI <- function(startupObject=NULL){
       enabled(impVis.aggr.weighted) <- TRUE
       enabled(impVis.histMiss.weighted) <- TRUE
       enabled(impVis.barMiss.weighted) <- TRUE
-      #enabled(impVis.marginMatrix.weighted) <- TRUE
       enabled(impVis.scattmatrixMiss.weighted) <- TRUE
       enabled(impVis.mosaicMiss.weighted) <- TRUE
       enabled(impVis.parcoordMiss.weighted) <- TRUE
@@ -1362,7 +1361,6 @@ VIMGUI <- function(startupObject=NULL){
       enabled(impVis.aggr.weighted) <- FALSE
       enabled(impVis.histMiss.weighted) <- FALSE
       enabled(impVis.barMiss.weighted) <- FALSE
-      #enabled(impVis.marginMatrix.weighted) <- FALSE
       enabled(impVis.scattmatrixMiss.weighted ) <- FALSE
       enabled(impVis.mosaicMiss.weighted) <- FALSE
       enabled(impVis.parcoordMiss.weighted) <- FALSE
@@ -1374,38 +1372,30 @@ VIMGUI <- function(startupObject=NULL){
     #adaped summary page to dataset
     svalue(dataPanel.summarytext) <- ""
     sumdat <- data.frame()
+		#if data is survey
     if(is.survey(getVm("activeDataSetOriginal"))){
       d <- dim(getVm("activeDataSetOriginal"))
+			#put survey summary + head count into summary field
       svalue(dataPanel.summarytext) <- paste(paste(capture.output(print(getVm("activeDataSetOriginal"))), collapse="\n"),"\n",d[1],' Observations  -  ',d[2],' Variables',collapse="")
-      #insert(dataPanel.summarytext, capture.output(print(getVm("activeDataSetOriginal"))))
-        #,font.attr = c("bold","medium"))
-#      insert(dataPanel.summarytext, paste(d[1],' Observations  -  ',d[2],' Variables',sep=""))
-             #,font.attr = c("bold"))
       sumdat <- getVm("activeDataSetOriginal")$variables
     }
     else{
       d <- dim(getVm("activeDataSetOriginal"))
+			#test if a non-empty data set is loaded
       if (d[1] == 1 & d[2] == 1){
         svalue(dataPanel.summarytext) <- "No Dataset loaded!"
       }
       else{
+				#write head-count into summary field
         svalue(dataPanel.summarytext) <- paste("Dataframe",paste(d[1],' Observations  -  ',d[2],' Variables',sep=""),sep="\n")
       }
-      #insert(dataPanel.summarytext, "Dataframe")
-             #,font.attr = c("bold","medium"))
-      #d <- dim(getVm("activeDataSetOriginal"))
-      #insert(dataPanel.summarytext, paste(d[1],' Observations  -  ',d[2],' Variables',sep=""))
-          #,font.attr = c("bold"))
       sumdat <- getVm("activeDataSetOriginal")
     }
-    #print(sumdat)
-    #calculate different statistics for each variable
-    #catch problem for non-numeric data types
     sumtable <- createSummaryDataframe(sumdat)
     insertTable(dataPanel.summaryTable, sumtable)
     insertTable(imputation.summarytable, sumtable)
 
-    #save which variables are already imputed
+    #init the data structure for the undo imputation tab
     vars <- rep(FALSE, length(getVariableNames(getVm("activeDataSetOriginal"))))
     methods <- rep(" ", length(getVariableNames(getVm("activeDataSetOriginal"))))
     times <- rep(" ", length(getVariableNames(getVm("activeDataSetOriginal"))))
@@ -1414,10 +1404,12 @@ VIMGUI <- function(startupObject=NULL){
     putVm("ImputedVariables", vars)
   }
   
-  #called if somebody presses the options menu entry
-  #creates and window for color selection and all handlers
+  #creates the option window which allows the user to select the colors for the plots
+	#called after clicking the corresponding menu entry
   OptionsHandler <- function(h,...){
+		#init window, varaibles and layout
     options.window <- gwindow(title="Options", width=50, height=50)
+		#the init takes rather long, so put a "please wait"-message there
     temp <- ggroup(container=options.window)
     glabel("<b><big>LOADING!</big></b>", container=temp, markup = TRUE)
     options.layout <- glayout()
@@ -1452,9 +1444,12 @@ VIMGUI <- function(startupObject=NULL){
     options.layout[7,1:2, anchor <- c(-1, -1)] <- glabel("Alpha:")
     options.layout[8,1:2] <- options.alpha
     options.smallgroup <- ggroup()
+		#handler for discard button, closes window
     gbutton(" Discard", container=options.smallgroup, handler=function(h,...){
       dispose(options.window)
     })
+		#handler for accept button
+		#saves colors and redraws plot
     gbutton(" Accept", container=options.smallgroup, handler=function(h,...){
       color <- c(svalue(options.color1),
                  svalue(options.color2),
@@ -1468,16 +1463,19 @@ VIMGUI <- function(startupObject=NULL){
       dispose(options.window)
     })
     options.layout[9,2] <- options.smallgroup
+		#loading is done now, remove "please wait" and substitute real widgets
     delete(options.window, temp)
     add(options.window, options.layout)
   }
   
-  #called after somebody clicked the script menu item
   #shows a copyable list of the R code of the called operations
+	#called after somebody clicked the script menu item
   ScriptHandler <- function(h,...){
+		#init window and layout
     script.window <- gwindow("Script View", width=1024, height=300)
     script.code <- gtext(container=script.window)
     hist <- getVm("ScriptHistory")
+		#piece together all saved script lines and present them in textbox
     script_text <- character(0)
     for (line in hist){
       if (!isEmpty(line)){
@@ -1488,15 +1486,19 @@ VIMGUI <- function(startupObject=NULL){
   }
   
   #small helper which simplifies the addition of a new line of code
+	#puts "line" at the end of a list of all added script lines 
   addScriptLine <- function(line){
     putVm("ScriptHistory", c(getVm("ScriptHistory"), line))
   }
   
   #draws a plot, created by expression plotExpr, onto a gimage widget
   #this plot is temporary created as image file inside the working directory
-  #this resolves some bugs with the as.cairodevice-methode
+  #this resolves some bugs with the as.cairodevice-methode and allows for better image quality
+	#plotExpr 	...		ordinary R-code for to-be-drawn plot
+	#target			...		widget to put the created image
+	#savePlot		...		small workaround to double use this function for also permanent image saving
   bufferedPlot <- function(plotExpr, target=impVis.plot, savePlot=FALSE){
-    #if the plot graphics has to be saved to disk with user definied criteria
+    #if the plot graphics has to be saved to disk with user defined criteria
     #outsource this to other function
     #done to reduce overhead while rewriting plot functionality
     if (savePlot){
@@ -1504,13 +1506,13 @@ VIMGUI <- function(startupObject=NULL){
     }
     else{
       try({
+				#get size of widget to preserve plot proportions
         tgtk <- getToolkitWidget(target)
         a <- tgtk$getAllocation()
-        #cdev <- dev.cur()
+				#save temporary as PNG in working directory
         dev <- CairoPNG(filename="current.tmp", a$allocation$width-3, a$allocation$height-3)
         eval(plotExpr)
         dev.off(dev)
-        #dev.set(cdev)
         svalue(target) <- "current.tmp"
         file.remove("current.tmp")
       }, silent=TRUE)
@@ -1518,28 +1520,27 @@ VIMGUI <- function(startupObject=NULL){
 
   }
   
-  #called after somebody doubleclicks a row to undo the imputation
-  #sets the variable to its original value und removes the entry from the table
+  #sets the variable to its original value and removes the entry from the table
+	#called after somebody double-clicks a row to undo the corresponding imputation
   undoImputation <- function(h,...){
+		#get the to-undo variable and ask user if he is sure
     varname <- as.character(svalue(imputation.undo.variables))
     w <- gconfirm(paste("Undo imputation of",varname,"?"))
     if (w==TRUE){
       orig <- getVm("activeDataSetOriginal")
       imp <- getVm("activeDataSetImputed")
-      #change value back
+      #change value back to original, mind if survey or not
       if (is.survey(orig)){
         imp$variables[,varname] <- orig$variables[,varname]
         imp$variables[,paste(varname,"_imp",sep="")] <- NULL
-        #commandline script
+        #build command line script for script browser
         addScriptLine(paste("activedataset$variables$",varname," <- originaldataset$variables$",varname, sep=""))
         addScriptLine(paste("activedataset$variables$",varname,"_imp <- NULL", sep=""))
       }
       else{
-        #print(imp[,varname])
-        #print(orig[,varname])
         imp[,varname] <- orig[,varname]
         imp[,paste(varname,"_imp",sep="")] <- NULL
-        #commandline script
+        #build command line script for script browser
         addScriptLine(paste("activedataset$",varname," <- originaldataset$",varname, sep=""))
         addScriptLine(paste("activedataset$",varname,"_imp <- NULL", sep=""))
       }
@@ -1551,15 +1552,18 @@ VIMGUI <- function(startupObject=NULL){
       vars[varname,3] <- " "
       putVm("ImputedVariables", vars)
       sumtable <- createSummaryDataframe(imp)
+			#update tables
       insertTable(imputation.summarytable, sumtable)
-      #print(vars)
       updateUndoVariablesTable()
     }
   }
   
-  #called after somebody presses the "Apply Imputation"-Button
-  #applys selected imputation method, updates dataset and summary text
+	#main working method for the imputation
+	#handler for the "apply imputation" button
+  #applies selected imputation method, updates dataset and tables
+	#called after somebody presses the "Apply Imputation"-Button
   Imputation <- function(h,...){
+		#if there was already a previous imputation, apply imputation to that dataset
     if (is.null(getVm("activeDataSetImputed"))){
       dataset <- getVm("activeDataSetOriginal")
     }
@@ -1567,9 +1571,11 @@ VIMGUI <- function(startupObject=NULL){
       dataset <- getVm("activeDataSetImputed")
     }
     
-    #perform knn imputation
+		#select imputation method depending on which tab the user is on
+    #perform kNN imputation
     if (svalue(imputation.notebook)==1){
-      #convert widgets to useable function parameters
+      #convert widgets to useable function parameters, i.e. convert from character to numeric,
+			#substitute NULL for empty elements,...
       variable <- getVariableNames(getVm("activeDataSetOriginal"))
       v <- as.character(svalue(imputation.kNN.variable))
       if (length(v) > 0){
@@ -1606,21 +1612,8 @@ VIMGUI <- function(startupObject=NULL){
         mixed.constant <- v
       }
       
-#       #imputation and saving of screen output for summary
-#       sumText <- capture.output(t <- try(impData <- kNN(dataset,
-#                                                variable = variable,
-#                                                k = k,
-#                                                dist_var = dist_var,
-#                                                weights = weights,
-#                                                numFun = get(svalue(imputation.kNN.numFun)),
-#                                                catFun = get(svalue(imputation.kNN.catFun)),
-#                                                #makeNA = makeNA,
-#                                                impNA = svalue(imputation.kNN.impNA),
-#                                                addRandom = svalue(imputation.kNN.addRandom),
-#                                                mixed = mixed,
-#                                                mixed.constant = mixed.constant)))
-      
-      #imputation and saving of screen output for summary
+			#perform actual imputation
+			#capture different errors and warnings
       sumText <- capture.output(impData <- tryCatch({kNN(dataset,
                                                         variable = variable,
                                                         k = k,
@@ -1635,91 +1628,94 @@ VIMGUI <- function(startupObject=NULL){
                                                         mixed.constant = mixed.constant)},
                                                     error=function(e){
                                                       message(e$message)
-                                                      gmessage(paste("A problem occured (see also in console):",e$message), title="Warning", icon="error")
+                                                      gmessage(paste("A problem occurred (see also in console):",e$message), title="Warning", icon="error")
                                                       return(NULL)
                                                     },
                                                     warning=function(e){
                                                       message(e$message)
-                                                      gmessage(paste("A problem occured (see also in console):",e$message), title="Warning", icon="error")
+                                                      gmessage(paste("A problem occurred (see also in console):",e$message), title="Warning", icon="error")
                                                       return(NULL)
                                                     }))
       
       #no error while imputation
       if(!is.null(impData)) {
+				#save imputed data and update different tables 
         putVm("activeDataSetImputed", impData)  
-        if (is.null(impData) == FALSE){
-          enabled(impVis.plotImputed) <- TRUE 
-          vars <- getVm("ImputedVariables")
-          if (is.survey(impData)){
-            variable <- compareImputations(dataset$variables, impData$variables)
-          }
-          else{
-            variable <- compareImputations(dataset, impData)
-          }
-          vars[variable,1] <- TRUE
-          vars[variable,2] <- "kNN"
-          vars[variable,3] <- format(Sys.time(), "%H:%M:%S")
-          putVm("ImputedVariables", vars)
-          #print(vars)
-          updateUndoVariablesTable()
-          sumtable <- createSummaryDataframe(impData)
-          insertTable(imputation.summarytable, sumtable)
-          #create commandline script
-          variable <- getVariableNames(getVm("activeDataSetOriginal"))
-          v <- as.character(svalue(imputation.kNN.variable))
-          if (length(v) > 0){
-            variable <- v
-          }
-          variable <- paste("c(",paste(sapply(variable, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
-          
-          k <- "5"
-          v <- svalue(imputation.kNN.k)
-          if (v != ""){
-            k <- as.character(v)
-          }
-          
-          dist_var <- getVariableNames(getVm("activeDataSetOriginal"))
-          v <- as.character(svalue(imputation.kNN.dist_var))
-          if (length(v) > 0){
-            dist_var <- v
-          }
-          dist_var <- paste("c(",paste(sapply(dist_var, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
-          
-          weights <- "NULL"
-          v <- cutParam(svalue(imputation.kNN.weights))
-          if (length(v) > 0) {
-            weights <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
-          }
-          
-          mixed <- "NULL"
-          v <- as.character(svalue(imputation.kNN.mixed))
-          if (length(v) > 0){
-            mixed <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
-          }
-          
-          mixed.constant <- "NULL"
-          v <- cutParam(svalue(imputation.kNN.mixed.constant))
-          if (length(v) > 0){
-            mixed.constant <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
-          }
-          cmd <- paste('activedataset <- kNN(activedataset, variable=',variable,',',
-                       'k=',as.character(k),", ",
-                       'dist_var=',dist_var,", ",
-                       'weights=',weights,", ",
-                       'numFun=',svalue(imputation.kNN.numFun),", ",
-                       'catFun=',svalue(imputation.kNN.catFun),", ",
-                       'impNA=',svalue(imputation.kNN.impNA),", ",
-                       'addRandom=',svalue(imputation.kNN.addRandom),", ",
-                       'mixed=',mixed,", ",
-                       'mixed.constant=',mixed.constant,") ", collapse="")
-          addScriptLine(cmd)
-          gmessage("Imputation successful!", title="Success", icon="info")
-        }
+				enabled(impVis.plotImputed) <- TRUE 
+				#test if there was a actual imputations, i.e. if there are fewer missing values
+				vars <- getVm("ImputedVariables")
+				if (is.survey(impData)){
+					variable <- compareImputations(dataset$variables, impData$variables)
+				}
+				else{
+					variable <- compareImputations(dataset, impData)
+				}
+				#add the newly imputed variables to the undo tab
+				vars[variable,1] <- TRUE
+				vars[variable,2] <- "kNN"
+				vars[variable,3] <- format(Sys.time(), "%H:%M:%S")
+				putVm("ImputedVariables", vars)
+				updateUndoVariablesTable()
+				sumtable <- createSummaryDataframe(impData)
+				insertTable(imputation.summarytable, sumtable)
+				#create command-line script for script browser
+				#convert to different parameter from widgets to readable strings
+				variable <- getVariableNames(getVm("activeDataSetOriginal"))
+				v <- as.character(svalue(imputation.kNN.variable))
+				if (length(v) > 0){
+					variable <- v
+				}
+				variable <- paste("c(",paste(sapply(variable, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
+				
+				k <- "5"
+				v <- svalue(imputation.kNN.k)
+				if (v != ""){
+					k <- as.character(v)
+				}
+				
+				dist_var <- getVariableNames(getVm("activeDataSetOriginal"))
+				v <- as.character(svalue(imputation.kNN.dist_var))
+				if (length(v) > 0){
+					dist_var <- v
+				}
+				dist_var <- paste("c(",paste(sapply(dist_var, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
+				
+				weights <- "NULL"
+				v <- cutParam(svalue(imputation.kNN.weights))
+				if (length(v) > 0) {
+					weights <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
+				}
+				
+				mixed <- "NULL"
+				v <- as.character(svalue(imputation.kNN.mixed))
+				if (length(v) > 0){
+					mixed <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
+				}
+				
+				mixed.constant <- "NULL"
+				v <- cutParam(svalue(imputation.kNN.mixed.constant))
+				if (length(v) > 0){
+					mixed.constant <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
+				}
+				cmd <- paste('activedataset <- kNN(activedataset, variable=',variable,',',
+										 'k=',as.character(k),", ",
+										 'dist_var=',dist_var,", ",
+										 'weights=',weights,", ",
+										 'numFun=',svalue(imputation.kNN.numFun),", ",
+										 'catFun=',svalue(imputation.kNN.catFun),", ",
+										 'impNA=',svalue(imputation.kNN.impNA),", ",
+										 'addRandom=',svalue(imputation.kNN.addRandom),", ",
+										 'mixed=',mixed,", ",
+										 'mixed.constant=',mixed.constant,") ", collapse="")
+				addScriptLine(cmd)
+				gmessage("Imputation successful!", title="Success", icon="info")
+        
       }
     }
     #perform irmi imputation
     if (svalue(imputation.notebook)==2){
-      #convert widget content to imputation parameter
+      #convert widgets to useable function parameters, i.e. convert from character to numeric,
+			#substitute NULL for empty elements,...
       variable <- getVariableNames(getVm("activeDataSetOriginal"))
       v <- as.character(svalue(imputation.irmi.variable))
       if (length(v) > 0){
@@ -1744,6 +1740,8 @@ VIMGUI <- function(startupObject=NULL){
         count <- v
       }
       
+			#perform actual imputation
+			#capture different errors and warnings
       sumText <- capture.output(impData <- tryCatch({irmi(dataset,
                                                 #variable = variable,
                                                 mixed = mixed,
@@ -1754,68 +1752,71 @@ VIMGUI <- function(startupObject=NULL){
                                                 noise.factor = svalue(imputation.irmi.noise.factor))},
                                                error=function(e){
                                                  message(e$message)
-                                                 gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                                 gmessage(paste("A problem occurred (see also in console):",e$message), title="Problem", icon="error")
                                                  return(NULL)
                                                },
                                                warning=function(e){
                                                  message(e$message)
-                                                 gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                                 gmessage(paste("A problem occurred (see also in console):",e$message), title="Problem", icon="error")
                                                  return(NULL)
                                                }))
       #no error while imputation
       if(!is.null(impData) ) {
+				#save imputed data
         putVm("activeDataSetImputed", impData)  
-        if (is.null(impData) == FALSE){
-          enabled(impVis.plotImputed) <- TRUE 
-          vars <- getVm("ImputedVariables")
-          #TODO: CHANGE AFTER SOMEBODY IMPLEMENTED THE VARIABLES SELECTION FOR IRMI
-          #vars[getVariableNames(getVm("activeDataSetOriginal"))] <- TRUE
-          #variable <- getVariableNames(getVm("activeDataSetOriginal"))
-          if (is.survey(impData)){
-            variable <- compareImputations(dataset$variables, impData$variables)
-          }
-          else{
-            variable <- compareImputations(dataset, impData)
-          }
-          vars[variable,1] <- TRUE
-          vars[variable,2] <- "irmi"
-          vars[variable,3] <- format(Sys.time(), "%H:%M:%S")
-          putVm("ImputedVariables", vars)
-          updateUndoVariablesTable()
-          sumtable <- createSummaryDataframe(impData)
-          insertTable(imputation.summarytable, sumtable)
-          #build commandline string
-          mixed <- "NULL"
-          v <- as.character(svalue(imputation.irmi.mixed))
-          if (length(v) > 0){
-            mixed <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
-          }
-          
-          mixed.constant <- "NULL"
-          v <- cutParam(svalue(imputation.irmi.mixed.constant))
-          if (length(v) > 0){
-            mixed.constant <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
-          }
-          
-          count <- "NULL"
-          v <- as.character(svalue(imputation.irmi.count))
-          if (length(v) > 0){
-            count <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
-          }
-          cmd <- paste('activedataset <- irmi(activedataset, mixed=',mixed,',',
-                       'mixed.constant=',mixed.constant,", ",
-                       'count=',count,", ",
-                       'robust=',svalue(imputation.irmi.robust),", ",
-                       'noise=',svalue(imputation.irmi.noise),", ",
-                       'noise.factor=',svalue(imputation.irmi.noise.factor),") ", collapse="")
-          addScriptLine(cmd)
-          gmessage("Imputation successful!", title="Success", icon="info")
-        }
+				enabled(impVis.plotImputed) <- TRUE 
+				vars <- getVm("ImputedVariables")
+				#FOR FUTURE REFERENCE: IRMI VARIABLE SELECTION
+				#vars[getVariableNames(getVm("activeDataSetOriginal"))] <- TRUE
+				#variable <- getVariableNames(getVm("activeDataSetOriginal"))
+				
+				#find actual imputed variables and save them for undo operation
+				if (is.survey(impData)){
+					variable <- compareImputations(dataset$variables, impData$variables)
+				}
+				else{
+					variable <- compareImputations(dataset, impData)
+				}
+				vars[variable,1] <- TRUE
+				vars[variable,2] <- "irmi"
+				vars[variable,3] <- format(Sys.time(), "%H:%M:%S")
+				putVm("ImputedVariables", vars)
+				updateUndoVariablesTable()
+				sumtable <- createSummaryDataframe(impData)
+				insertTable(imputation.summarytable, sumtable)
+				#build command line string
+				#convert the content of widgets to a actual string representation
+				mixed <- "NULL"
+				v <- as.character(svalue(imputation.irmi.mixed))
+				if (length(v) > 0){
+					mixed <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
+				}
+				
+				mixed.constant <- "NULL"
+				v <- cutParam(svalue(imputation.irmi.mixed.constant))
+				if (length(v) > 0){
+					mixed.constant <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
+				}
+				
+				count <- "NULL"
+				v <- as.character(svalue(imputation.irmi.count))
+				if (length(v) > 0){
+					count <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
+				}
+				cmd <- paste('activedataset <- irmi(activedataset, mixed=',mixed,',',
+										 'mixed.constant=',mixed.constant,", ",
+										 'count=',count,", ",
+										 'robust=',svalue(imputation.irmi.robust),", ",
+										 'noise=',svalue(imputation.irmi.noise),", ",
+										 'noise.factor=',svalue(imputation.irmi.noise.factor),") ", collapse="")
+				addScriptLine(cmd)
+				gmessage("Imputation successful!", title="Success", icon="info") 
       }
     }
     #perform hotdeck imputation
     if (svalue(imputation.notebook)==3){
-      #convert widget content to function parameter
+      #convert widgets to useable function parameters, i.e. convert from character to numeric,
+			#substitute NULL for empty elements,...
       variable <- getVariableNames(getVm("activeDataSetOriginal"))
       v <- as.character(svalue(imputation.hotdeck.variable))
       if (length(v) > 0){
@@ -1834,12 +1835,8 @@ VIMGUI <- function(startupObject=NULL){
         domain_var <- v
       }
       
-#       makeNA <- NULL
-#       v <- svalue(imputation.hotdeck.makeNA)
-#       if (v != "" && v != " " && v != character(0)){
-#         makeNA <- v
-#       }
-      
+      #perform actual imputation
+			#capture different errors and warnings
       sumText <- capture.output(impData <- tryCatch({hotdeck(dataset,
                                                    variable = variable,
                                                    ord_var = ord_var,
@@ -1848,61 +1845,62 @@ VIMGUI <- function(startupObject=NULL){
                                                    impNA = svalue(imputation.hotdeck.impNA))},
                                                     error=function(e){
                                                       message(e$message)
-                                                      gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                                      gmessage(paste("A problem occurred (see also in console):",e$message), title="Problem", icon="error")
                                                       return(NULL)
                                                     },
                                                     warning=function(e){
                                                       message(e$message)
-                                                      gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                                      gmessage(paste("A problem occurred (see also in console):",e$message), title="Problem", icon="error")
                                                       return(NULL)
                                                     }))
       #no error while imputation
       if(!is.null(impData)) {
+				#save imputed data
         putVm("activeDataSetImputed", impData)  
-        if (is.null(impData) == FALSE){
-          if (is.survey(impData)){
-            variable <- compareImputations(dataset$variables, impData$variables)
-          }
-          else{
-            variable <- compareImputations(dataset, impData)
-          }
-          enabled(impVis.plotImputed) <- TRUE 
-          vars <- getVm("ImputedVariables")
-          vars[variable,1] <- TRUE
-          vars[variable,2] <- "hotdeck"
-          vars[variable,3] <- format(Sys.time(), "%H:%M:%S")
-          putVm("ImputedVariables", vars)
-          #print(vars)
-          updateUndoVariablesTable()
-          sumtable <- createSummaryDataframe(impData)
-          insertTable(imputation.summarytable, sumtable)
-          #build commandline script
-          variable <- getVariableNames(getVm("activeDataSetOriginal"))
-          v <- as.character(svalue(imputation.hotdeck.variable))
-          if (length(v) > 0){
-            variable <- v
-          }
-          variable <- paste("c(",paste(sapply(variable, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
+				#find actual imputed variables and save them for future reference (undo)
+				if (is.survey(impData)){
+					variable <- compareImputations(dataset$variables, impData$variables)
+				}
+				else{
+					variable <- compareImputations(dataset, impData)
+				}
+				enabled(impVis.plotImputed) <- TRUE 
+				vars <- getVm("ImputedVariables")
+				vars[variable,1] <- TRUE
+				vars[variable,2] <- "hotdeck"
+				vars[variable,3] <- format(Sys.time(), "%H:%M:%S")
+				putVm("ImputedVariables", vars)
+				updateUndoVariablesTable()
+				sumtable <- createSummaryDataframe(impData)
+				insertTable(imputation.summarytable, sumtable)
+				#build command-line script for script browser
+				#convert content of widgets to readable string
+				variable <- getVariableNames(getVm("activeDataSetOriginal"))
+				v <- as.character(svalue(imputation.hotdeck.variable))
+				if (length(v) > 0){
+					variable <- v
+				}
+				variable <- paste("c(",paste(sapply(variable, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
+				
+				ord_var <- "NULL"
+				v <- as.character(svalue(imputation.hotdeck.ord_var))
+				if (length(v) > 0){
+					ord_var <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
+				}
+				
+				domain_var <- "NULL"
+				v <- as.character(svalue(imputation.hotdeck.domain_var))
+				if (length(v) > 0){
+					domain_var <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
+				}
+				cmd <- paste('activedataset <- hotdeck(activedataset, variable=',variable,',',
+										 'ord_var=',ord_var,", ",
+										 'domain_var=',domain_var,", ",
+										 'impNA=',svalue(imputation.hotdeck.impNA),")", collapse="")
+				addScriptLine(cmd)
+				gmessage("Imputation successful!", title="Success", icon="info")
           
-          ord_var <- "NULL"
-          v <- as.character(svalue(imputation.hotdeck.ord_var))
-          if (length(v) > 0){
-            ord_var <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
-          }
-          
-          domain_var <- "NULL"
-          v <- as.character(svalue(imputation.hotdeck.domain_var))
-          if (length(v) > 0){
-            domain_var <- paste("c(",paste(sapply(v, FUN=function(s)paste('"',s,'"',sep="")), collapse=","),")")
-          }
-          cmd <- paste('activedataset <- hotdeck(activedataset, variable=',variable,',',
-                       'ord_var=',ord_var,", ",
-                       'domain_var=',domain_var,", ",
-                       'impNA=',svalue(imputation.hotdeck.impNA),")", collapse="")
-          addScriptLine(cmd)
-          gmessage("Imputation successful!", title="Success", icon="info")
-          
-        }
+        
       }
     }
     
@@ -1913,13 +1911,10 @@ VIMGUI <- function(startupObject=NULL){
     }
   }
   
-  #called if the widgets controlling the contents of the table are changed
-  #recalculates the table
+	#recalculates the content of the data overview table in the data tab
+  #handler for the different dropdown-lists of the data overview
   dataPanelChangeHandler <- function(...){
-    #print("change Handler!")
-    #print(h)
-    #print(paste(svalue(dataPanel.variableSelection), svalue(dataPanel.statisticsSelection), svalue(dataPanel.bySelection)))
-    #names(dataPanel.table) <- c("Domain", svalue(dataPanel.statisticsSelection), "SE") 
+		#chooses if to use the original or the imputed dataset, depending on the users choice in gui
     curdat <- numeric()
     if (svalue(dataPanel.imputationSelection)=="original"){
       curdat <- getVm("activeDataSetOriginal")
@@ -1927,14 +1922,12 @@ VIMGUI <- function(startupObject=NULL){
     else{
       curdat <- getVm("activeDataSetImputed")
     }
-    #if variables are selected
+    #if a variable is selected, for which there should be a calculation
     if (is.null(svalue(dataPanel.variableSelection))==FALSE){
-      #if a by-operation should be performed
-      # || !is.Empty(as.character(svalue(dataPanel.bySelection)))
+      #if a by-operation (i.e. calculating statistic for different domains) should be performed
       if (!is.Empty(svalue(dataPanel.bySelection))){
+				#data is survey, use survey package for calculation
         if (is.survey(curdat)) {
-          
-          #print(as.formula(paste("~",svalue(dataPanel.variableSelection))))
           tab <- as.data.frame(svyby(as.formula(paste("~",svalue(dataPanel.variableSelection))),
                                      as.formula(paste("~",svalue(dataPanel.bySelection))),
                                      curdat, 
@@ -1943,11 +1936,12 @@ VIMGUI <- function(startupObject=NULL){
           insertTable(dataPanel.table, tab)
         }
         else{
-          #print(svalue(dataPanel.statisticsSelection))
+          #not a survey, use aggregate for calculation
           tab <- aggregate(as.formula(paste(svalue(dataPanel.variableSelection),"~",svalue(dataPanel.bySelection))),
                            curdat, get(svalue(dataPanel.statisticsSelection)))
+					#calculate the standard deviation if the mean was calculated
           if (svalue(dataPanel.statisticsSelection) == "mean"){
-            #se <- sd(curdat)/sqrt(length(curdat))
+						#again use aggregate for the SE of mean calculation
             se <- aggregate(as.formula(paste(svalue(dataPanel.variableSelection),"~",svalue(dataPanel.bySelection))),
                             curdat, FUN = function(s){sd(as.numeric(s),na.rm = TRUE)/sqrt(length(s))})
             se <- se[,2]
@@ -1960,21 +1954,16 @@ VIMGUI <- function(startupObject=NULL){
         }
       }#a single value (not a by-oepration) shall be performed
       else{
+				#perform single calculation
+				#for surveys use survey package to do so
         if (is.survey(curdat)) {
-          #print(as.formula(paste("~",svalue(dataPanel.variableSelection))))
-#           tab <- as.data.frame(svyby(as.formula(paste("~",svalue(dataPanel.variableSelection))),
-#                                      as.formula(paste("~",svalue(dataPanel.bySelection))),
-#                                      curdat, 
-#                                      get(svalue(dataPanel.statisticsSelection))), stringsAsFactors=FALSE)
           tab <- do.call(svalue(dataPanel.statisticsSelection), list(as.formula(paste("~",svalue(dataPanel.variableSelection))), curdat))
-          #tab <- data.frame(lapply(tab, as.character), stringsAsFactors=FALSE)
           insertTable(dataPanel.table, data.frame(domain="all",value=coef(tab), se=SE(tab)))
         }
         else{
-#           tab <- aggregate(as.formula(paste(svalue(dataPanel.variableSelection),"~",svalue(dataPanel.bySelection))),
-#                            curdat, get(svalue(dataPanel.statisticsSelection)))
           curdat <- curdat[,svalue(dataPanel.variableSelection)]
           tab <- do.call(svalue(dataPanel.statisticsSelection), list(curdat, na.rm = TRUE))
+					#calculate SA if mean was previously calculated
           if (svalue(dataPanel.statisticsSelection) == "mean"){
             se <- sd(as.numeric(curdat), na.rm = TRUE)/sqrt(length(curdat))
           }
@@ -1988,15 +1977,20 @@ VIMGUI <- function(startupObject=NULL){
   }
   
   #opens a dialog to covert a normal data.frame to a survey object
-  #allows to select th different weighting variables
-  #called when clicking on the menu item
+  #allows to select the different weighting variables
+  #called when clicking on the corresponding menu item
   createSurveyDialog <- function(){
+		#find all datasets in the global environment which can be used as base for new survey
+		#alternative use the currently loaded dataset
     vardt <- ls(envir = .GlobalEnv, all.names=TRUE)
     vards <- names(which(sapply(vardt, function(.x) is.data.frame(get(.x)))))
     vards <- c(vards,names(which(sapply(vardt, function(.x) is.survey(get(.x))))))
     vards <- c("Current Dataset",vards)
+		#set default focus to the ID textfield, uses to determine the target of the text input actions
     putVm("CreateSurveyDialogFocus", "ids")
+		#use per default the already loaded dataset
     dataobject <- getVm("activeDataSetOriginal")
+		#build layout and init widgets
     variableNames <- getVariableNames(dataobject)
     survey.window <- gwindow("Create Survey Object from Dataset")
     survey.layout <- glayout(container=survey.window)
@@ -2047,10 +2041,11 @@ VIMGUI <- function(startupObject=NULL){
     survey.layout[8,3] <- survey.weights
     survey.layout[9,3] <- gg
     
+		#set the background of the in-foxus field to a light yellow
     setWidgetBgColor(survey.ids, "palegoldenrod")
     
-    
     #resets the background color of all entry fields
+		#small helper
     resetSurveyColors <- function(){
       setWidgetBgColor(survey.ids, "white")
       setWidgetBgColor(survey.probs, "white")
@@ -2060,6 +2055,8 @@ VIMGUI <- function(startupObject=NULL){
       setWidgetBgColor(survey.weights, "white")
     }
     
+		#use focus handler of all text-fields to determine current focus
+		#save it and recolor backgrounds dependently
     addHandlerFocus(survey.ids, handler=function(h,...){
       putVm("CreateSurveyDialogFocus", "ids")
       resetSurveyColors()
@@ -2090,9 +2087,14 @@ VIMGUI <- function(startupObject=NULL){
       resetSurveyColors()
       setWidgetBgColor(survey.weights, "palegoldenrod")
       })
+			
     #if double click on table add selected variable to textfield which had focus last
+		#handler for the variable table
     addHandlerChanged(survey.variables, handler=function(h,...){
+			#retrieve saved focus
       field <- getVm("CreateSurveyDialogFocus")
+			#insert the variable name to field in a way that a valid R formula is created
+			#i.e. for each variable after the first add a "+" before
       if (field=="ids") {
         old <- svalue(survey.ids)
         t <- ""
@@ -2142,26 +2144,32 @@ VIMGUI <- function(startupObject=NULL){
         svalue(survey.weights) <- paste(svalue(survey.weights),t, svalue(survey.variables), sep="")
       }
     })
+		
     #if new dataset is selected in the dropdown menu
+		#update the variable table
     addHandlerChanged(survey.dataset, handler=function(h,...){
       #current VIMGUI dataset
       if(svalue(survey.dataset, index=TRUE) == 1){
         dataobject <- getVm("activeDataSetOriginal")
         variableNames <- getVariableNames(dataobject)
         insertTable(survey.variables, variableNames)
-		svalue(survey.vars) <- paste(variableNames, collapse=" + ")
+				svalue(survey.vars) <- paste(variableNames, collapse=" + ")
       }
       else{
         dataobject <- get(svalue(survey.dataset))
         variableNames <- getVariableNames(dataobject)
         insertTable(survey.variables, variableNames)
-		svalue(survey.vars) <- paste(variableNames, collapse=" + ")
+				svalue(survey.vars) <- paste(variableNames, collapse=" + ")
       }
     })
+		
     #discard button, close window
     addHandlerChanged(survey.discard, handler=function(h,...){dispose(survey.window)})
+		
     #accept button was clicked, creates survey object and sets it as new active object for GUI
     addHandlerChanged(survey.accept, handler=function(h,...){
+			#if survey object is based on current active dataset and there are imputed values
+			#use them?
       if(svalue(survey.dataset, index=TRUE) == 1){
         if (is.null(getVm("activeDataSetImputed")) == TRUE){
           dataobject <- getVm("activeDataSetOriginal")
@@ -2190,6 +2198,7 @@ VIMGUI <- function(startupObject=NULL){
       variables <- NULL
       fpc <- NULL
       weights <- NULL
+			#build formulas out of widget strings
       if (is.Empty(svalue(survey.ids)) == FALSE){
         ids <- as.formula(paste("~", svalue(survey.ids)))
       }
@@ -2208,31 +2217,29 @@ VIMGUI <- function(startupObject=NULL){
       if (is.Empty(svalue(survey.weights)) == FALSE){
         weights <- as.formula(paste("~", svalue(survey.weights)))
       }
+			#perform actual survey creation
       surveyObject <- tryCatch({svydesign(ids=ids, probs = probs, strata = strata, variables = variables,
                                          fps = fpc, weights = weights, data = dataobject)},
                                error=function(e){
                                  message(e$message)
-                                 gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                 gmessage(paste("A problem occurred (see also in console):",e$message), title="Problem", icon="error")
                                  return(NULL)
                                },
                                warning=function(e){
                                  message(e$message)
-                                 gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                 gmessage(paste("A problem occurred (see also in console):",e$message), title="Problem", icon="error")
                                  return(NULL)
                                })
       if(!is.null(surveyObject)){
         #survey could be created
-        #putVm("activeDataSetOriginal", surveyObject)
-        #str(getVm("activeDataSetOriginal"))
-        #initPanels()
-        #updatePanels()
+				#build commandline string for script dialog
         if(svalue(survey.dataset, index=TRUE) == 1){
           datasetname <- "activedataset"
         }
         else{
           datasetname <- svalue(survey.dataset)
         }
-        #build commandline string for script dialog
+				#convert widget content to readable strings
         ids <- "NULL"
         probs <- "NULL"
         strata <- "NULL"
@@ -2270,6 +2277,8 @@ VIMGUI <- function(startupObject=NULL){
 
     })
     
+		#handler for the small symbol buttons, to add strings 
+		#just adds the corresponding string to the focused field
     surveyButtonHandler <- function(h,...){
       field <- getVm("CreateSurveyDialogFocus")
       if (field=="ids") {
@@ -2292,6 +2301,7 @@ VIMGUI <- function(startupObject=NULL){
       }
     }
     
+		#add handlers for small buttons
     addHandlerClicked(survey.button1, action="+", handler=surveyButtonHandler)
     addHandlerClicked(survey.button2, action=":", handler=surveyButtonHandler)
     addHandlerClicked(survey.button3, action="*", handler=surveyButtonHandler)
@@ -2304,6 +2314,7 @@ VIMGUI <- function(startupObject=NULL){
   #of the VIM package onto the current dataset
   #called after pressing the corresponding menu item
   createPrepareDialog <- function(){
+		#inits the window, its layout and the different widgets
     prepare.window <- gwindow("Prepare Dataset", width=100, height=100)
     prepare.scaling <- gdroplist(c("none","classical","MCD","robust","onestep"))
     prepare.transformation <- gdroplist(c("none","minus","reciprocal","logarithm",
@@ -2328,6 +2339,7 @@ VIMGUI <- function(startupObject=NULL){
     prepare.layout[3,4] <- prepare.alrVar
     prepare.layout[4,4] <- prepare.apply
     
+		#disable elements not working with current setting
     enabled(prepare.alpha) <- FALSE
     enabled(prepare.powers) <- FALSE
     enabled(prepare.start) <- FALSE
@@ -2356,15 +2368,27 @@ VIMGUI <- function(startupObject=NULL){
       }
     })
     
-    #apply button pressed
+    #handler for apply button
+		#does the actual prepare
     addHandlerClicked(prepare.apply, function(h,...){
       proceed <- TRUE
-      #dataset already imputed, procced?
+			w <- FALSE
+      #dataset already imputed, proceed?
       if (is.null(getVm("activeDataSetImputed")) == FALSE){
         w <- gconfirm("Preparing the dataset will remove imputation, proceed?", title="Imputed Values", icon="question")
+				if (w == TRUE){
+					proceed <- TRUE
+				}
       }
       if(proceed){
-        currentDataset <- getVm("activeDataSetOriginal")
+				#depending on chosen modes, select parameters from gui widgets
+        if (w == TRUE) {
+					currentDataset <- getVm("activeDataSetImputed")
+				}
+				else
+				{
+					currentDataset <- getVm("activeDataSetOriginal")
+				}
         alpha <- NULL
         powers <- NULL
         start <- NULL
@@ -2385,17 +2409,19 @@ VIMGUI <- function(startupObject=NULL){
                                     alpha=alpha, powers=powers, start=start, alrVar=alrVar)},
                                     error=function(e){
                                       message(e$message)
-                                      gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                      gmessage(paste("A problem occurred (see also in console):",e$message), title="Problem", icon="error")
                                       return(NULL)
                                     },
                                     warning=function(e){
                                       message(e$message)
-                                      gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                      gmessage(paste("A problem occurred (see also in console):",e$message), title="Problem", icon="error")
                                       return(NULL)
                                     })
-        #there was a problem
+        #there was no problem
         if(!is.null(preparedDataset)) {
+					#save old dataset for possible undo operation
           putVm("undoDataSetOriginal", currentDataset)
+					#build command line script for script browser
           if (is.null(alpha)) alpha <- "NULL"
           if (is.null(powers)) powers <- "NULL"
           if (is.null(start)) start <- "NULL"
@@ -2413,6 +2439,8 @@ VIMGUI <- function(startupObject=NULL){
                           'start=',start,', ',
                           'alrVar=',alrVar,')', sep="")
           #addScriptLine(cmdimp)
+					#set new prepared dataset as the currently active dataset
+					#dont adjustTypes as the old dataset must have been
           setActiveDataset(preparedDataset, prepare=TRUE, 
                            adjustTypes=FALSE, loadScript=cmdimp)
           enabled(menu.Undo) <- TRUE
@@ -2424,26 +2452,27 @@ VIMGUI <- function(startupObject=NULL){
   }
   
   #undo a previous prepare action
-  #called from menu
+  #called from corresponding menu entry
   undoPrepare <- function(){
+		#Do you really want to?
     w <- gconfirm("Undoing the previous prepare action removes all subsequent changes, proceed?", title="Undo prepare", icon="question")
     if (w == TRUE){
       undoDataset <- getVm("undoDataSetOriginal")
       setActiveDataset(undoDataset, adjustTypes=FALSE, deleteScript=FALSE)
       addScriptLine("activedataset <- undoDataset")
     }
-    
   }
   
   #updates the content of the undo variables table
-  #called after imputation occured
+  #called after imputation occurred
   updateUndoVariablesTable <- function(){
     vars <- getVm("ImputedVariables")
     elements <- vars[vars[,1]==TRUE,]
     insertTable(imputation.undo.variables, cbind(rownames(elements), elements[,2], elements[,3]))
   }
   
-  #opens a dialog to convert spacific values in specific variables to NA
+  #opens a dialog to convert specific values in specific variables to NA
+	#called after clicking the corresponding menu entry
   createNaDialog <- function(){
     setNA.window <- gwindow("Set Values to NA")
     setNA.panel <- glayout(container=setNA.window, expand=TRUE)
@@ -2480,6 +2509,7 @@ VIMGUI <- function(startupObject=NULL){
     })
   }
   
+	#updates some tables with possible values combinations
   #called if certain widgets in the imputation tabs are changed like the tables
   imputationChangeHandler <- function(h,...){
     if (svalue(imputation.notebook)==1){
@@ -2492,13 +2522,17 @@ VIMGUI <- function(startupObject=NULL){
     }
   }
   
-  #called  after double click on table for regression imputation
-  #writes selected variable names into the formula widgets
+  #writes selected variable names into the formula widgets of the regression imputation tab
+	#called  after double click on table for regression imputation
   regressionTableHandler <- function(h,...){
+		#retrieve previously saved focus (dependent or independent variable)
     focus <- getVm("regressionFocus")
+		#insert variable into last focused field
     if (focus == 0){
       old <- svalue(imputation.regression.dependent)
       t <- ""
+			#test if a "+" is necessary for a valid formula representation
+			#i.e. if this is the first variable in the line or the character before is special 
       if (!isEmpty(old) & !endsWithSymbol(old)){
         t <- "+"
       }
@@ -2509,6 +2543,8 @@ VIMGUI <- function(startupObject=NULL){
     else{
       old <- svalue(imputation.regression.independent)
       t <- ""
+			#test if a "+" is necessary for a valid formula representation
+			#i.e. if this is the first variable in the line or the character before is special 
       if (!isEmpty(old) & !endsWithSymbol(old)){
         t <- "+"
       }
@@ -2516,7 +2552,6 @@ VIMGUI <- function(startupObject=NULL){
                     svalue(imputation.regression.variables), sep = "")
                     svalue(imputation.regression.independent) <- text
     }
-    #svalue(imputation.regression.variables)
   }
   
   #called when clicking on the symbol buttons in the regression tab
@@ -2534,35 +2569,19 @@ VIMGUI <- function(startupObject=NULL){
   }
   
   
-  ###
-  #Initializations
+  ########
+  #Initializations for the most part of the user interface
+	#mostly layout and widget creation
+	
   #data(sleep)
   #putVm("activeDataSetOriginal", sleep)
   #putVm("activeDataSetImputed", NULL)
+	
+	#save default colors
   putVm("plotColors", c("skyblue","red","skyblue4","red4","orange","orange4"))
   putVm("plotAlpha", 1)
   
   #create menu structure for main window
-#   menuList <- list()
-#   menuList$Data$"Load DataSet"$handler = loadDataSet
-#   menuList$Data$"Choose DataSet"$handler = setDataSet
-#   menuList$Data$"Save DataSet"$"to File"$handler = saveToFile
-#   menuList$Data$"Save DataSet"$"to Variable"$handler = saveToVariable
-#   menuList$Data$Import$CSV$handler = importCSV
-#   menuList$Data$Import$SPSS$handler = importSPSS
-#   menuList$Data$Import$STATA$handler = importSTATA
-#   menuList$Data$Import$SAS$handler = importSAS
-#   menuList$Data$Export$CSV$handler = exportCSV
-#   menuList$Data$Export$SPSS$handler = exportSPSS
-#   menuList$Data$Export$STATA$handler = exportSTATA
-#   menuList$Data$Export$SAS$handler = exportSAS
-#   #menuList$Survey$LoadSurvey$handler = function(h,...) print("Loading Survey Object from File!")
-#   menuList$Survey$CreateSurvey$handler = function(h,...) createSurveyDialog()
-#   menuList$Edit$"Set Values to NA"$handler = function(h,...) createNaDialog() 
-#   menuList$Edit$"Prepare Data"$handler = function(h,...) createPrepareDialog()
-#   menuList$Edit$"Undo Prepare"$handler = function(h,...) undoPrepare()
-#   menuList$Options$Preferences$handler = OptionsHandler
-  
   menu.LoadDataset <- gaction(label="Load Dataset", handler=loadDataSet)
   menu.ChooseDataset <- gaction(label="Choose Dataset", handler=setDataSet)
   menu.SaveFile <- gaction(label="to File", handler=saveToFile)
@@ -2582,8 +2601,10 @@ VIMGUI <- function(startupObject=NULL){
   menu.Preferences <- gaction(label="Preferences", handler = OptionsHandler) 
   menu.Script <- gaction(label="Script", handler = ScriptHandler) 
   
+	#create main window
   mainWindow <- gwindow(title="VIM GUI", width=1024, height=768)
-  #menuBar <- gmenu(menuList, container=mainWindow)
+ 
+	#build menu bar
   ml <- list(
     Data = list(
     load=menu.LoadDataset,
@@ -2610,13 +2631,12 @@ VIMGUI <- function(startupObject=NULL){
   #add notebook with tabs for different tasks to main window
   mainNotebook <- gnotebook(container=mainWindow)
   dataGroup <- ggroup(container=mainNotebook, label="Data")
-  #missingVisGroup <- ggroup(container=mainNotebook, label="Visualization of Missings")
   imputationGroup <- ggroup(horizontal=FALSE, container=mainNotebook, label="Imputation")
   imputationVisGroup <- ggroup(container=mainNotebook, label="Visualization")
   addHandlerChanged(mainNotebook, mainNotebook.handler)
   
   #####
-  #Data Group
+  #init and layout of the Data tab
   dataPanel.summaryframe <- gframe("Summary of original dataset: ", container=dataGroup, expand=TRUE)
   dataPanel.summarypanel <- ggroup(horizontal=FALSE, container=dataPanel.summaryframe, expand=TRUE)
   dataPanel.summarytext <- gtext(container=dataPanel.summarypanel)
@@ -2634,7 +2654,6 @@ VIMGUI <- function(startupObject=NULL){
   size(dataPanel.bySelection) <- c(120,-1)
   dataPanel.imputationSelection <- gradio(c("original","imputed"), horizontal=TRUE)
   dataPanel.table <- gtable(data.frame(Domain=rep(" ",1000), Value=rep(" ",1000), SE=rep(" ",1000)))
-  #visible(dataPanel.table) <- rep(FALSE,10000)
   dataPanel.overviewpanel[1,1:3] <- dataPanel.imputationSelection 
   dataPanel.overviewpanel[2,1] <- glabel("Variable:")
   dataPanel.overviewpanel[3,1] <- dataPanel.variableSelection
@@ -2647,86 +2666,28 @@ VIMGUI <- function(startupObject=NULL){
   dataPanel.statisticsSelectionHandler <- addHandlerChanged(dataPanel.statisticsSelection, handler=dataPanelChangeHandler)
   dataPanel.bySelectionHandler <- addHandlerChanged(dataPanel.bySelection, handler=dataPanelChangeHandler)
   dataPanel.imputationSelectionHandler <- addHandlerChanged(dataPanel.imputationSelection, handler=dataPanelChangeHandler)
-  
-#   #####
-#   #Visualization of Missings
-#   #create frames
-#   missVis.plotFrame <- gframe("Plot", container=missingVisGroup, expand=TRUE)
-#   missVis.paramsFrame <- gframe("Parameters", container=missingVisGroup)
-#   size(missVis.paramsFrame) <- c(241, -1)
-#   missVis.plot <- ggraphics(container=missVis.plotFrame)
-#   missVis.pargroup <- glayout(container=missVis.paramsFrame)
-#   #fill parameter frame with widgets
-#   missVis.plotlist <- gdroplist(c("Aggregations for missing values",
-#                                   "Barplot with highlighting",
-#                                   "Histogram with missings",
-#                                   "Scatterplot matrix  (Margins)",
-#                                   "Scatterplot matrix",
-#                                   "Mosaic Plot",
-#                                   "Parallel Coordinate Plot",
-#                                   "Parallel Boxplots"))
-#   addHandlerChanged(missVis.plotlist,missVis.plotlist.handler)
-#   missVis.booleanParam1 <- gcheckbox("Parameter1")
-#   missVis.booleanParam2 <- gcheckbox("Parameter2")
-#   missVis.booleanParam3 <- gcheckbox("Parameter3")
-#   missVis.booleanParam4 <- gcheckbox("Parameter4")
-#   missVis.booleanParam5 <- gcheckbox("Parameter5")
-#   missVis.booleanParam6 <- gcheckbox("Parameter6")
-#   addHandlerChanged(missVis.booleanParam1, handler=makeMissingsPlot)
-#   addHandlerChanged(missVis.booleanParam2, handler=makeMissingsPlot)
-#   addHandlerChanged(missVis.booleanParam3, handler=makeMissingsPlot)
-#   addHandlerChanged(missVis.booleanParam4, handler=makeMissingsPlot)
-#   addHandlerChanged(missVis.booleanParam5, handler=makeMissingsPlot)
-#   addHandlerChanged(missVis.booleanParam6, handler=makeMissingsPlot)
-#   #size(missVis.plotlist) <- c(30, -1)
-#   missVis.pargroup[1,1] <- glabel("Plot Type:")
-#   missVis.pargroup[2,1:2] <- missVis.plotlist
-#   missVis.pargroup[3,1] <- missVis.booleanParam1 
-#   missVis.pargroup[3,2] <- missVis.booleanParam2 
-#   missVis.pargroup[4,1] <- missVis.booleanParam3 
-#   missVis.pargroup[4,2] <- missVis.booleanParam4 
-#   missVis.pargroup[5,1] <- missVis.booleanParam5 
-#   missVis.pargroup[5,2] <- missVis.booleanParam6 
-#   missVis.textParamLabel <- glabel("Textparam:")
-#   g <- ggroup()
-#   missVis.textParam <- gedit("", width=38, container=g)
-#   missVis.pargroup[6,1] <- missVis.textParamLabel
-#   missVis.pargroup[7,1:2] <- g
-#   missVis.dropParamLabel <- glabel("Dropparam:")
-#   g <- ggroup()
-#   missVis.dropParam <- gdroplist(c("",""))
-#   #size(missVis.dropParam) <- c(30, -1)
-#   missVis.pargroup[8,1] <- missVis.dropParamLabel
-#   missVis.pargroup[9,1:2] <- missVis.dropParam 
-#   missVis.comboParamLabel <- glabel("ComboLabel:")
-#   missVis.comboParam <- gcombobox(c(""), editable=TRUE)
-#   #size(missVis.comboParam) <- c(30, -1)
-#   missVis.pargroup[10,1] <- missVis.comboParamLabel
-#   missVis.pargroup[11,1:2] <- missVis.comboParam 
-  
+ 
   
   ####
-  #Imputation Group
+  #init and layout Imputation tab
   imputation.notebook <- gnotebook(tab.pos = 2, container=imputationGroup, expand=TRUE)
   g <- ggroup(container=imputationGroup)
   f <- gframe("Summary of imputed dataset:", container=g, expand=TRUE)
-  #imputation.summary <- gtext(container=f, expand=TRUE)
   df <- data.frame(a="", b="", c="", d="", e="", f="", g="", h="", stringsAsFactors=FALSE)
   imputation.summarytable <- gtable(df, expand=TRUE, container=f)
-  #enabled(imputation.summary) <- FALSE
   names(imputation.summarytable) <- c("Name", "Class", "NA", "Min","Lower","Median","Upper","Max")
   size(imputation.summarytable) <- c(-1,300)
   f2 <- gframe("", container=g)
   gg <- ggroup(horizontal=FALSE, container=f2)
   imputation.ok <- gbutton("Apply Imputation", container=gg)
-  #imputation.undo <- gbutton("Undo Imputation", container=gg)
   addHandlerClicked(imputation.ok, handler=Imputation)
   imputation.kNN.group <- glayout(container=imputation.notebook, label="kNN", expand=TRUE)
   imputation.irmi.group <- glayout(container=imputation.notebook, label="irmi", expand=TRUE)
   imputation.hotdeck.group <- glayout(container=imputation.notebook, label="hotdeck", expand=TRUE)
   imputation.regression.group <- glayout(container=imputation.notebook, label="regression", expand=TRUE)
   imputation.undo.group <- glayout(container=imputation.notebook, label="undo", expand=TRUE)
-  ###kNN-Tab
+	
+  ###kNN-imputation-Tab
   imputation.kNN.variable <- gtable(rep("",100), multiple=TRUE)
   size(imputation.kNN.variable) <- c(120,200)
   names(imputation.kNN.variable) <- "variables"
@@ -2737,7 +2698,6 @@ VIMGUI <- function(startupObject=NULL){
   imputation.kNN.weights <- gedit()
   imputation.kNN.numFun <- gdroplist(c("median","mean"))
   imputation.kNN.catFun <- gdroplist(c("maxCat","sampleCat"))
-  #imputation.kNN.makeNA <- gedit()
   imputation.kNN.impNA <- gcheckbox("impNA")
   svalue(imputation.kNN.impNA) <- TRUE
   imputation.kNN.addRandom <- gcheckbox("addRandom")
@@ -2745,11 +2705,8 @@ VIMGUI <- function(startupObject=NULL){
   size(imputation.kNN.mixed) <- c(120,200)
   names(imputation.kNN.mixed) <- "mixed"
   imputation.kNN.mixed.constant <- gedit()
-  #imputation.kNN.group[1,1, anchor = c(-1,-1)] <- glabel("variables:")
   imputation.kNN.group[1:8,1] <- imputation.kNN.variable
-  #imputation.kNN.group[1,2, anchor = c(-1,-1)] <- glabel("dist_variables:")
   imputation.kNN.group[1:8,2] <- imputation.kNN.dist_var
-  #imputation.kNN.group[1,3, anchor = c(-1,-1)] <- glabel("mixed:")
   imputation.kNN.group[1:8,3] <- imputation.kNN.mixed
   imputation.kNN.group[1,4, anchor = c(-1, 0)] <- glabel("k:")
   imputation.kNN.group[1,5] <- imputation.kNN.k
@@ -2761,14 +2718,11 @@ VIMGUI <- function(startupObject=NULL){
   imputation.kNN.group[2,7] <- imputation.kNN.catFun
   imputation.kNN.group[3,4, anchor = c(-1, 0)] <- glabel("mixed.constant:")
   imputation.kNN.group[3,5] <- imputation.kNN.mixed.constant
-  #imputation.kNN.group[3,6, anchor = c(-1, 0)] <- glabel("makeNA:")
-  #imputation.kNN.group[3,7] <- imputation.kNN.makeNA
-  #imputation.kNN.group[4,4, anchor = c(-1, 0)] <- glabel("impNA:")
   imputation.kNN.group[4,4, anchor = c(-1, 0)] <- imputation.kNN.impNA
-  #imputation.kNN.group[4,6, anchor = c(-1, 0)] <- glabel("addRandom:")
   imputation.kNN.group[4,5, anchor = c(-1, 0)] <- imputation.kNN.addRandom
   addHandlerClicked(imputation.kNN.variable, handler=imputationChangeHandler)
-  ###irmi-Tab
+	
+  ###irmi-imputation-Tab
   imputation.irmi.variable <- gtable(rep("",100), multiple=TRUE)
   size(imputation.irmi.variable) <- c(120,200)
   names(imputation.irmi.variable) <- "variables"
@@ -2783,22 +2737,18 @@ VIMGUI <- function(startupObject=NULL){
   imputation.irmi.noise <- gcheckbox("noise")
   imputation.irmi.noise.factor <- gslider(from = 0, to = 1, by = 0.01)
   size(imputation.irmi.noise.factor) <- c(120,-1)
-  #imputation.irmi.group[1,1, anchor = c(-1,-1)] <- glabel("variables:")
   imputation.irmi.group[1:8,1] <- imputation.irmi.variable
-  #imputation.irmi.group[1,2, anchor = c(-1,-1)] <- glabel("mixed:")
-  #imputation.irmi.group[1,3, anchor = c(-1,-1)] <- glabel("count:")
   imputation.irmi.group[1:8,2] <- imputation.irmi.count
   imputation.irmi.group[1:8,3] <- imputation.irmi.mixed
   imputation.irmi.group[1,4, anchor = c(-1, 0)] <- glabel("mixed.constant:")
   imputation.irmi.group[1,5] <- imputation.irmi.mixed.constant
-  #imputation.irmi.group[1,4, anchor = c(-1, 0)] <- glabel("mixed.constant:")
   imputation.irmi.group[2,4] <- imputation.irmi.robust
-  #imputation.irmi.group[2,4, anchor = c(-1, 0)] <- glabel("mixed.constant:")
   imputation.irmi.group[3,4, anchor = c(-1, 0)] <- imputation.irmi.noise
   imputation.irmi.group[4,4, anchor = c(-1, -0.5)] <- glabel("noise.factor:")
   imputation.irmi.group[4,5, anchor = c(-1, 0)] <- imputation.irmi.noise.factor
   addHandlerClicked(imputation.irmi.variable, handler=imputationChangeHandler)
-  ###hotdeck-Tab
+	
+  ###hotdeck-imputation-Tab
   imputation.hotdeck.variable <- gtable(rep("",100), multiple=TRUE)
   size(imputation.hotdeck.variable) <- c(120,200)
   names(imputation.hotdeck.variable) <- "variables"
@@ -2808,19 +2758,14 @@ VIMGUI <- function(startupObject=NULL){
   imputation.hotdeck.domain_var<- gtable(rep("",100), multiple=TRUE)
   size(imputation.hotdeck.domain_var) <- c(120,200)
   names(imputation.hotdeck.domain_var) <- "domain_var"
-  #imputation.hotdeck.makeNA <- gedit()
   imputation.hotdeck.impNA <- gcheckbox("impNA")
   svalue(imputation.hotdeck.impNA) <- TRUE
-  #imputation.hotdeck.group[1,1, anchor = c(-1,-1)] <- glabel("variables:")
   imputation.hotdeck.group[1:8,1] <- imputation.hotdeck.variable
-  #imputation.hotdeck.group[1,2, anchor = c(-1,-1)] <- glabel("ord_var:")
   imputation.hotdeck.group[1:8,2] <- imputation.hotdeck.ord_var
-  #imputation.hotdeck.group[1,3, anchor = c(-1,-1)] <- glabel("domain_var:")
   imputation.hotdeck.group[1:8,3] <- imputation.hotdeck.domain_var
-  #imputation.hotdeck.group[1,4, anchor = c(-1, 0)] <- glabel("makeNA:")
-  #imputation.hotdeck.group[1,5] <- imputation.hotdeck.makeNA
   imputation.hotdeck.group[1,4] <- imputation.hotdeck.impNA
-  ###regression
+	
+  ###regression-imputation-tab
   imputation.regression.variables <- gtable("")
   names(imputation.regression.variables) <- "variables"
   size(imputation.regression.variables) <- c(120,200)
@@ -2845,19 +2790,16 @@ VIMGUI <- function(startupObject=NULL){
   size(imputation.regression.independent) <- c(250, -1)
   imputation.regression.family <- gdroplist(c("AUTO", "normal", "binomial", "multinomial",
                                               "poisson", "lognormal"))
-  #size(imputation.regression.family) <- c(10, -1)
   imputation.regression.robust <- gcheckbox("robust")
   imputation.regression.group[1:8,1] <- imputation.regression.variables
   imputation.regression.group[1,2] <- bg
-  #imputation.regression.group[2,2] <- glabel("model:")
-  #imputation.regression.group[2,2] <- imputation.regression.dependent
-  #imputation.regression.group[2,3, anchor=c(0,0)] <- glabel("~")
-  #imputation.regression.group[2,4:6] <- imputation.regression.independent
   imputation.regression.group[2,2:6] <- bgg
   imputation.regression.group[3,2] <- imputation.regression.family
   imputation.regression.group[4,2] <- imputation.regression.robust
   addHandlerChanged(imputation.regression.variables, handler=regressionTableHandler)
   setWidgetBgColor(imputation.regression.dependent, "palegoldenrod")
+	#add handler for the dependent and independent formula fields
+	#these save the last focus and change their colors
   addHandlerFocus(imputation.regression.dependent, handler=function(h,...){
     putVm("regressionFocus", 0)
     setWidgetBgColor(imputation.regression.dependent, "palegoldenrod")
@@ -2874,7 +2816,8 @@ VIMGUI <- function(startupObject=NULL){
   addHandlerClicked(imputation.regression.button4, action=",", handler=regressionButtonHandler)
   addHandlerClicked(imputation.regression.button5, action="^", handler=regressionButtonHandler)
   addHandlerClicked(imputation.regression.button6, action="-", handler=regressionButtonHandler)
-  ###Undo-Tab
+	
+  ###Undo-imputation-Tab
   imputation.undo.variables <- gtable(data.frame(variable="", method="", time=""))
   names(imputation.undo.variables) <- c("variable","method", "time")
   #size(imputation.undo.variables) <- c(120,200)
@@ -2882,17 +2825,11 @@ VIMGUI <- function(startupObject=NULL){
   imputation.undo.group[2:10,1:2, expand=TRUE] <- imputation.undo.variables
   addHandlerChanged(imputation.undo.variables, handler=undoImputation) 
 
-  
-  handlerList <- list()
   ####
-  #Visualization 
-  #impVis.plotFrame <- gframe("Plot", container=imputationVisGroup, expand=TRUE)
-  #impVis.paramsFrame <- gframe("Parameters", container=imputationVisGroup)
-  #impVis.pargroup <- glayout(horizontal=FALSE, container=impVis.paramsFrame)
-#   impVis.plotlist <- gdroplist(c("Plot1","Plot2","Plot3","Plot4","Plot5"))
-#   size(impVis.plotlist) <- c(250, -1)
-#   impVis.pargroup[1,1] <- glabel("Plot Type:")
-#   impVis.pargroup[1,2:3] <- impVis.plotlist
+  #init and layout Visualization - tab
+	#save references of handlers in a single list to allow a quick deactivation
+	#done for performance reasons
+	handlerList <- list()
   g <- ggroup(horizontal=FALSE, container=imputationVisGroup)
   impVis.plotImputed <- gradio(c("original","imputed"), horizontal=TRUE, container=g)
   enabled(impVis.plotImputed) <- FALSE
@@ -2908,7 +2845,6 @@ VIMGUI <- function(startupObject=NULL){
   impVis.parcoordMiss.group <- glayout(container=impVis.plotBook)
   impVis.pbox.group <- glayout(container=impVis.plotBook)
   impVis.matrixplot.group <- glayout(container=impVis.plotBook)
-  #impVis.plot <- ggraphics(container=imputationVisGroup, expand=TRUE)
   impVis.plot <- gimage(container=imputationVisGroup, expand=TRUE)
     
   #aggregation of imputed values plot
@@ -2949,7 +2885,6 @@ VIMGUI <- function(startupObject=NULL){
   impVis.barMiss.group[2,2] <- impVis.barMiss.selection
   impVis.barMiss.group[3,1] <- impVis.barMiss.only.miss
   impVis.barMiss.group[3,2] <- impVis.barMiss.weighted
-  #addHandlerChanged(impVis.barMiss.pos, function(h,...){makeImputationPlot()})
   addHandlerChanged(impVis.barMiss.selection, function(h,...){makeImputationPlot()})
   addHandlerChanged(impVis.barMiss.only.miss, function(h,...){makeImputationPlot()})
   addHandlerChanged(impVis.barMiss.weighted, function(h,...){makeImputationPlot()})
@@ -2972,7 +2907,6 @@ VIMGUI <- function(startupObject=NULL){
   impVis.histMiss.group[4,1] <- impVis.histMiss.right
   impVis.histMiss.group[4,2] <- impVis.histMiss.only.miss
   impVis.histMiss.group[5,1] <- impVis.histMiss.weighted
-  #addHandlerChanged(impVis.histMiss.pos, function(h,...){makeImputationPlot()})
   addHandlerChanged(impVis.histMiss.selection, function(h,...){makeImputationPlot()})
   addHandlerChanged(impVis.histMiss.breaks, function(h,...){makeImputationPlot()})
   addHandlerChanged(impVis.histMiss.right, function(h,...){makeImputationPlot()})
@@ -3020,8 +2954,6 @@ VIMGUI <- function(startupObject=NULL){
   impVis.mosaicMiss.group[2,1] <- impVis.mosaicMiss.weighted
   impVis.mosaicMiss.group[3,1:2, fill="y", expand="TRUE"] <- impVis.mosaicMiss.plotvars
   impVis.mosaicMiss.group[4,1:2, fill="y", expand="TRUE"] <- impVis.mosaicMiss.highlight
-  #addHandlerClicked(impVis.mosaicMiss.highlight, function(h,...){makeImputationPlot()})
-  #addHandlerClicked(impVis.mosaicMiss.plotvars, function(h,...){makeImputationPlot()})
   addHandlerChanged(impVis.mosaicMiss.selection, function(h,...){makeImputationPlot()})
   addHandlerChanged(impVis.mosaicMiss.weighted, function(h,...){makeImputationPlot()})
   h <- addHandlerClicked(impVis.mosaicMiss.highlight, function(h,...){makeImputationPlot()})
@@ -3042,8 +2974,6 @@ VIMGUI <- function(startupObject=NULL){
   impVis.parcoordMiss.group[2,2] <- impVis.parcoordMiss.weighted
   impVis.parcoordMiss.group[3,1:2, fill="y", expand="TRUE"] <- impVis.parcoordMiss.plotvars
   impVis.parcoordMiss.group[4,1:2, fill="y", expand="TRUE"] <- impVis.parcoordMiss.highlight
-  #addHandlerClicked(impVis.parcoordMiss.highlight, function(h,...){makeImputationPlot()})
-  #addHandlerClicked(impVis.parcoordMiss.plotvars, function(h,...){makeImputationPlot()})
   addHandlerChanged(impVis.parcoordMiss.selection, function(h,...){makeImputationPlot()})
   addHandlerChanged(impVis.parcoordMiss.plotNA, function(h,...){makeImputationPlot()})
   handlerList[[length(handlerList)+1]] <- c(impVis.parcoordMiss.highlight,
@@ -3064,7 +2994,6 @@ VIMGUI <- function(startupObject=NULL){
   impVis.pbox.group[2,2] <- impVis.pbox.selection
   impVis.pbox.group[3,1] <- impVis.pbox.numbers
   impVis.pbox.group[3,2] <- impVis.pbox.weighted
-  #addHandlerChanged(impVis.pbox.pos, function(h,...){makeImputationPlot()})
   addHandlerChanged(impVis.pbox.selection, function(h,...){makeImputationPlot()})
   addHandlerChanged(impVis.pbox.weighted, function(h,...){makeImputationPlot()})
   addHandlerChanged(impVis.pbox.numbers, function(h,...){makeImputationPlot()})
@@ -3084,16 +3013,18 @@ VIMGUI <- function(startupObject=NULL){
   
   
   #popup menu for saving images
+	#activates by right click onto plot 
   sml <- list()
   sml$"Save as JPEG"$handler = function(h,...) savePlotToFile("JPEG")
   sml$"Save as PDF"$handler = function(h,...) savePlotToFile("PDF")
   sml$"Save as PNG"$handler = function(h,...) savePlotToFile("PNG")
   sml$"Save as PS"$handler = function(h,...) savePlotToFile("PS")
   sml$"Save as SVG"$handler = function(h,...) savePlotToFile("SVG")
-  #saveplot.menu <- gmenu(sml, popup=TRUE)
   add3rdMousePopupmenu(impVis.plot, sml)
   
   #add rotated labels to the imputation plot notebook
+	#this is done by using native GTK-methods
+	#obtained by using the RGtk2 package
   notebook <- getToolkitWidget(impVis.plotBook)
   label <- gtkLabel("aggr")
   gtkLabelSetAngle(label, 90)
@@ -3125,7 +3056,9 @@ VIMGUI <- function(startupObject=NULL){
   svalue(impVis.plotBook) <- 1
   addHandlerChanged(impVis.plotBook, imputationPlotHandler)
   
-  #rotated labels for imputation gui
+  #add rotated labels to the imputation notebook
+	#this is done by using native GTK-methods
+	#obtained by using the RGtk2 package
   notebook <- getToolkitWidget(imputation.notebook)
   label <- gtkLabel("knn")
   gtkLabelSetAngle(label, 90)
@@ -3145,6 +3078,8 @@ VIMGUI <- function(startupObject=NULL){
   svalue(imputation.notebook) <- 1
   
   #clean up after closing the main window
+	#in case of closing the window while creating a new plot
+	#tries to delete a possible remaining temporary image in the working directory
   addHandlerUnrealize(mainWindow, handler=function(h,...){
     try({
       if (file.exists("current.tmp")){
@@ -3153,21 +3088,22 @@ VIMGUI <- function(startupObject=NULL){
     }, silent=TRUE)
   })
   
-  #initPanels()
+  #create a artificial dataset without real values in case the application
+	#was started with a dataset
+	#this has the purpose of allowing the widgets to initialize
+	#but do this much faster than with a real dataset
   if (is.null(startupObject)){
-#     putVm("activeDataSetOriginal", NULL)
-#     putVm("activeDataSetImputed", NULL)
-#     enabled(menu.Undo) <- FALSE
-#     putVm("undoDataSetOriginal", NULL)
-#     putVm("ScriptHistory", list(""))
     startupObject <- data.frame(empty="")
     setActiveDataset(startupObject, firstPage=FALSE, adjustTypes=FALSE)
   }
   else{
+		#parse the name of the dataset used to start the application
+		#used for the script window
     cmdimp <- paste("activedataset <- ",deparse(substitute(startupObject)))
     setActiveDataset(startupObject, firstPage=FALSE, loadScript=cmdimp)
   }
   
+	#init all the tabs in the interface
   svalue(mainNotebook) <- 3
   #svalue(mainNotebook) <- 4
   svalue(mainNotebook) <- 1

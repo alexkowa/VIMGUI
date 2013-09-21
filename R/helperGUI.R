@@ -5,32 +5,33 @@
 
 #contains different small helper functions for the GUI
 
-#a efficent RGtk2 based function for clearning a table
+#a efficient RGtk2 based function for clearing a table
+#uses insertTable to insert an empty data.frame
+#table 		...			a gTable object
+#ncol			...			number of columns
 clearTable <- function(table, ncol=1){
-#   t <- getToolkitWidget(table)
-#   model <- gtkTreeViewGetModel(t)
-#   #print(model[1,])
-#   d <- dim(model)
-#   df <- data.frame(matrix(" ",ncol=d[1]))
-#   #gtkTreeViewSetModel(t, rGtkDataFrameNew(frame=df))
-#   rGtkDataFrameSetFrame(model, df)
   insertTable(table, as.data.frame(matrix(rep(" ", ncol), ncol=ncol)))
 }
 
-#a more efficent way to insert new values into a table
-#gwidgets create a table structure with invisible columns which contain additional
-#information like rownames or colors
+#a more efficient way to insert new values into a table
+#gWidgets create a table structure with invisible columns which contain additional
+#information like row-names or colors, which seam the be updated each time
+#a value changes
+#in addition sometimes changing the content of a table, with the gWidgets, methods
+#creates warnings
+#table 		...			a gTable object
+#values		...			data.frame with the same amount of variables as the old data
 insertTable <- function(table, values){
-  #print(values)
+	#ensure that values are in a data.frame
   if (class(values)!="data.frame"){
     values <- as.data.frame(values)
   }
+	#get data-model of table
   t <- getToolkitWidget(table)
   model <- gtkTreeViewGetModel(t)
-  #str(model[])
+	#incorporates the new data in a data.frame used by the table structure (additional columns for colors,...) 
   d <- dim(model)
   df <- data.frame(matrix(model[1,], nrow=dim(values)[1], ncol=d[2], byrow=TRUE), stringsAsFactors = FALSE)
-  #print(6 + (ncol(values)-1)*3)
   df[,seq(from=6, to = 6 + (ncol(values)-1)*3, by=3)] <- values
   rGtkDataFrameSetFrame(model, df)
 }
@@ -55,7 +56,7 @@ existsVm <- function (x, mode="any") {
   exists(x, envir=vmGUIenv(), mode=mode, inherits=FALSE)
 }
 
-#checks per regular expression if string is empty(only consists of whitespaces)
+#checks per regular expression if string is empty(only consists of white-spaces)
 #used to make code more readable
 isEmpty <- function(s){
   grepl("^(\\s)*$",s)
@@ -167,9 +168,11 @@ parseVarStr <- function(x, ...) {
   return(s)
 }
 
-#opens a dialog which allows the adjustment of datatypes in a dataframe or survey object
+#opens a dialog which allows the adjustment of data-types in a dataframe or survey object
 adjustTypesDialog <- function(original){
+	#init and layout the dialog
   dialog.window <- gbasicdialog("Adjust Data Types", width=768, height=512, do.buttons=FALSE)
+	#the creation of the dialog can take some time -> waiting message
   lw <- loadingWindow(parent=dialog.window)
   size(dialog.window) <- c(768, 768)
   g <- ggroup(horizontal=FALSE, container=dialog.window)
@@ -185,12 +188,15 @@ adjustTypesDialog <- function(original){
   }
   dialog.layout <- glayout(container=gg, expand=TRUE)
   accept.button <- gbutton("Accept", container=g)
+	#save all widget references in a list
   widgets <- list()
   accepts <- list()
+	#header
   dialog.layout[1, 1, anchor=c(0,0)] <- glabel('<span size="large"><b><u></u></b></span>', markup=TRUE)
   dialog.layout[1, 2, anchor=c(0,0)] <- glabel('<span size="large"><b><u>Variable:</u></b></span>', markup=TRUE)
   dialog.layout[1, 3, expand=TRUE,anchor=c(0,0)] <- glabel('<span size="large"><b><u>Content:</u></b></span>', markup=TRUE)
   dialog.layout[1, 4, expand=FALSE,anchor=c(0,0)] <- glabel('<span size="large"><b><u>Type:</u></b></span>', markup=TRUE)
+	#create a checkbox, label, dropdown-list (with typ) for each variable in data.frame
   for(i in 1:length(names)){
     a <- gcheckbox("")
     size(a) <- c(20,15)
@@ -204,11 +210,18 @@ adjustTypesDialog <- function(original){
     dialog.layout[i+1, 4,expand=FALSE] <- w
     widgets[i] <- w
   }
+	#loading done -> destroy waiting dialog
   dispose(lw)
+	
+	#accept button handler
+	#does the conversion
   addHandlerClicked(accept.button, handler=function(h,...){
+		#retrieve the new typs of all variables from the widgets in the list
     nTypes <- sapply(widgets, FUN=function(s)svalue(s))
     newData <- original
+		#if survey or not
     if(is.survey(newData)){
+			#convert each variable
       for (i in 1:length(nTypes)){
         if (nTypes[i] == "numeric"){
           newData$variables[,i] <- as.numeric(original$variables[,i])
