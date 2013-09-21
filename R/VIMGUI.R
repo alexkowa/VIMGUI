@@ -425,8 +425,10 @@ VIMGUI <- function(startupObject=NULL){
     return(window)
   }
   
-  # Data - Import - Import CSV
+  #window for importing CSV files with a interactive preview 
+	#called after clicking the corresponding menu entry
   importCSV <- function(...){
+		#init different window options and widgets
     importDialog <- gwindow("Import CSV", width=400, height=800)
     putVm("importDialog",importDialog)
     putVm("dframe", NULL)
@@ -435,11 +437,14 @@ VIMGUI <- function(startupObject=NULL){
     layout <- glayout()
     csvfilename <- gedit()
     enabled(csvfilename) <- FALSE
+		#handler for the file selection button handler
+		#lets the user select a file and uses a simple heuristic for choosing default parameters
     buttonHandler <- function(...){
       gfile(text = "Open CSV File", type = "open", 
             filter=list("CSV files"=list(patterns=c("*.csv", "*.CSV")), "All files" = list(patterns = c("*"))),
             handler=function(h,...){
               svalue(csvfilename) <- h$file
+							#reads the beginning of the CSV file for preview and parameter estimation
               tryCatch({
                 fl <- readLines(svalue(csvfilename), n=2)
                 comma <- sapply(strsplit(as.character(fl[1]), ","), length)
@@ -459,10 +464,10 @@ VIMGUI <- function(startupObject=NULL){
                   }
                 }
               },
-                       error=function(e){
-                         gmessage(paste("There was a problem while preparing your data: '",e,"'"), "Problem",
-                                  icon="error")       
-                       })
+							 error=function(e){
+								 gmessage(paste("There was a problem while preparing your data: '",e,"'"), "Problem",
+													icon="error")       
+							 })
               previewCSV()
             })
     }
@@ -470,7 +475,6 @@ VIMGUI <- function(startupObject=NULL){
     #creates the actual preview inside the table, also the handler for all gui elements
     #beside the OK-button
     previewCSV <- function(...){
-      #testdata <- as.data.frame(matrix(rnorm(100), 10, 10))
       f <- gframe("Preview:")
       g <- ggroup(use.scrollwindow = TRUE)
       testimport <- NULL
@@ -509,7 +513,8 @@ VIMGUI <- function(startupObject=NULL){
       
     }
     
-    #setup csv import gui
+    #creates the layout for the parameter widgets in the CSV import window
+		#and setups the handler
     statusbar <- gstatusbar("")
     csvfilebutton <- gbutton("...", handler=buttonHandler)
     csvheader <- gcheckbox("header", checked=TRUE, handler=previewCSV)
@@ -542,6 +547,7 @@ VIMGUI <- function(startupObject=NULL){
                 focus(wd) <- TRUE
                 putVm("importFilename",svalue(csvfilename))
                 filename=gsub("\\\\","/",svalue(csvfilename))
+								#actual import of CSV
                 df <- read.table(svalue(csvfilename),
                                  fill=svalue(csvfill),
                                  header=svalue(csvheader),
@@ -555,6 +561,7 @@ VIMGUI <- function(startupObject=NULL){
                                  colClasses=colclasses,
                                  na.strings=strsplit(svalue(csvnastrings),",")[[1]])
                 dname <- format(Sys.time(), "importedCSV_%H_%M")
+								#build a command line script for the script window
                 cmdimp <- paste("activedataset <- read.table(\"",filename,"\"",
                                 ",fill=",svalue(csvfill), 
                                 ",header=",svalue(csvheader),
@@ -568,11 +575,7 @@ VIMGUI <- function(startupObject=NULL){
                                 ",colClasses=",colclassesSTR,
                                 ",na.strings=",parseVarStr(svalue(strsplit(svalue(csvnastrings),",")[[1]])),
                                 ")", sep="")
-                #putVm("cmdimp",cmdimp)
                 setActiveDataset(df, loadScript=cmdimp)
-                #svalue(dslab) <- paste(getVm("dataSetName")," (n=",nrow(ActiveDataSet()),")",sep="")
-                #enabled(gb1) <- TRUE
-                #enabled(gb2) <- TRUE
                 putVm("importFileName", svalue(csvfilename))
                 #save import parameters for later export
                 csvimportparams <- list(fill=svalue(csvfill),
@@ -595,16 +598,12 @@ VIMGUI <- function(startupObject=NULL){
       
     })
     csvdiscard <- gbutton("Discard ", handler=function(...){dispose(importDialog)})
-    csvadjustTypes <- gbutton("Adjust Types", handler=typDialog)
-    
+    #more CSV window layout
     ftop <- gframe("Choose CSV-File:")
     gtop <- ggroup(horizontal=TRUE, container=ftop)
     add(ftop, csvfilename, expand=TRUE)
     add(ftop, csvfilebutton)
     layout[1,1:7] <- ftop
-    #     layout[1,1, anchor=c(0,0)] <- glabel("Choose CSV-File:")
-    # 	  layout[1,2:6, fill=TRUE] <- csvfilename
-    # 	  layout[1,7] <- csvfilebutton
     fparams <- gframe("CSV-Parameters:")
     glayout <- glayout(container=fparams)
     glayout[2,1] <- csvheader
@@ -623,8 +622,8 @@ VIMGUI <- function(startupObject=NULL){
     glayout[2,5, anchor=c(0,0)] <- glabel("NA-strings:")
     glayout[2,6, expand=FALSE] <- csvnastrings
     layout[2:5, 1:7] <- fparams
+		#init window after layouting
     previewCSV()
-    #layout[11,5, expand=FALSE] <- csvadjustTypes
     layout[11,6, expand=FALSE] <- csvaccept
     layout[11,7, expand=FALSE] <- csvdiscard
     add(importDialogFrame, layout, expand=TRUE)
@@ -632,60 +631,8 @@ VIMGUI <- function(startupObject=NULL){
     buttonHandler()
   }
   
-  # Typ Dialog
-  typDialog <- function(...){
-    testimport <- getVm("dframe")
-    colclasses <- lapply(testimport, class)
-    colname <- colnames(testimport)
-    importDialog <- getVm("importDialog")
-    tDialog <- gwindow("Change Variable Types", width=50, height=50,parent=importDialog)
-    tGroup <- ggroup(horizontal=FALSE, container=tDialog)
-    tFrame <- gframe("select variable type:")
-    gg <- glayout(use.scrollwindow = TRUE)
-    comboboxes <- list()
-    #maximal colums length
-    rn <- 10
-    for(i in 1:length(colclasses)){
-      s <- 0
-      #     	  if(colclasses[i]=='numeric')s=1
-      # 			  else if(colclasses[i]=='factor')s=2
-      # 			  else if(colclasses[i]=='character')s=3
-      # 			  else if(colclasses[i]=='integer')s=4
-      if(colclasses[i]=='numeric')s=1
-      else if(colclasses[i]=='factor')s=2
-      else if(colclasses[i]=='character')s=2
-      else if(colclasses[i]=='integer')s=1
-      #print(paste(colname[i],(i-1%%rn)+1))
-      gg[((i-1)%%rn)+1,1+2*ceiling(i/rn), anchor=c(0,0)]<-glabel(colname[i])
-      # 			  gc <- gcombobox(items=c('numeric','factor', 'character', 'integer'), selected=s)
-      gc <- gcombobox(items=c('numeric','factor'), selected=s)
-      gg[((i-1)%%rn)+1,2+2*ceiling(i/rn)]<-gc
-      comboboxes <- c(comboboxes, gc)
-    }
-    typeaccept <- gbutton("Accept ", handler=function(...){
-      testimport <- getVm("dframe")
-      for(i in 1:length(colclasses)){
-        colclasses[i]<-svalue(comboboxes[[i]])
-      }
-      #print(colclasses)
-      #putVm("dframe", testimport)
-      putVm("colclasses",colclasses)
-      putVm("changedTypes", TRUE)
-      dispose(tDialog)
-    })
-    typediscard <- gbutton("Discard ", handler=function(...){dispose(tDialog)})
-    # 		  gg[rn+1,1+2*ceiling(length(colclasses)/rn)] <- typeaccept
-    # 		  gg[rn+1,2+2*ceiling(length(colclasses)/rn)] <- typediscard
-    add(tFrame, gg)
-    add(tGroup, tFrame)
-    tg <- ggroup(horizontal=TRUE)
-    addSpring(tg)
-    add(tg, typediscard)
-    add(tg, typeaccept)
-    add(tGroup, tg)
-  }
-  
-  # Data - Import - Import SPSS
+  #opens a small window for importing SPSS files
+	#called after clicking the corresponding menu entry
   importSPSS <- function(...){
     importDialog <- gwindow("Import SPSS", parent=window, width=100, height=100)
     putVm("importDialog",importDialog)
@@ -694,7 +641,8 @@ VIMGUI <- function(startupObject=NULL){
     layout <- glayout()
     filename <- gedit()
     enabled(filename) <- FALSE
-    
+    #handler for open file button
+		#opens opens file window
     buttonHandler <- function(...){
       gfile(text = "Open SPSS File", type = "open", , 
             filter=list("SPSS files"=list(patterns=c("*.sav", "*.SAV")),"All files" = list(patterns = c("*"))),
@@ -715,6 +663,7 @@ VIMGUI <- function(startupObject=NULL){
       tryCatch({
         wd <- WaitingDialog(Parent=importDialog)
         focus(wd) <- TRUE
+				#actual import
         df <- spss.get(svalue(filename),
                        use.value.labels = svalue(check.use.value.labels),
                        lowernames = svalue(check.lowernames),
@@ -723,14 +672,14 @@ VIMGUI <- function(startupObject=NULL){
                        to.data.frame = TRUE)
         putVm("importFilename",svalue(filename))
         filename=gsub("\\\\","/",svalue(filename))
+				#build command line script for script window
         cmdimp <- paste("activedataset <- spss.get(\"",gsub("\\\\","/",filename),"\"",
                         ",use.value.labels=",svalue(check.use.value.labels), 
                         ",lowernames=",svalue(check.lowernames),
                         ",force.single=",svalue(check.force.single),
                         ",charfactor=",svalue(check.charfactor),
                         ",to.data.frame = TRUE)", sep="")
-        #putVm("cmdimp",cmdimp)
-        #dname <- format(Sys.time(), "importedSPSS_%H_%M")
+				#set dataset close window
         setActiveDataset(df, loadScript=cmdimp)
         dispose(wd)
         dispose(importDialog)
@@ -740,8 +689,7 @@ VIMGUI <- function(startupObject=NULL){
       
     })
     csvdiscard <- gbutton("Discard ", handler=function(...){dispose(importDialog)})
-    csvadjustTypes <- gbutton("Adjust Types", handler=typDialog)
-    
+		#more layout setup
     ftop <- gframe("Choose SPSS-File:")
     gtop <- ggroup(horizontal=TRUE, container=ftop)
     add(ftop, filename, expand=TRUE)
@@ -760,8 +708,10 @@ VIMGUI <- function(startupObject=NULL){
     buttonHandler()
   }
   
-  # Data - Import - Import STATA
+  #opens a small window for importing STATA files
+	#called after clicking the corresponding menu entry
   importSTATA <- function(...){
+		#create window layout and init variables
     importDialog <- gwindow("Import STATA", parent=window, width=100, height=100)
     putVm("importDialog",importDialog)
     putVm("dframe", NULL)
@@ -770,6 +720,8 @@ VIMGUI <- function(startupObject=NULL){
     filename <- gedit()
     enabled(filename) <- FALSE
     
+		#handler for the choose file button
+		#opens file selection window
     buttonHandler <- function(...){
       gfile(text = "Open STATA File", 
             filter=list("STATA files"=list(patterns=c("*.dta", "*.DTA")),"All files" = list(patterns = c("*"))),
@@ -787,15 +739,15 @@ VIMGUI <- function(startupObject=NULL){
       tryCatch({
         wd <- WaitingDialog(Parent=importDialog)
         focus(wd) <- TRUE
-        
+        #actual loading
         df <- read.dta(svalue(filename),
                        convert.factors = svalue(check.use.value.labels))
         putVm("importFilename",svalue(filename))
         filename=gsub("\\\\","/",svalue(filename))
+				#build command line script for script window
         cmdimp <- paste("activedataset <- read.dta(\"",gsub("\\\\","/",filename),"\"",
                         ",convert.factors=",svalue(check.use.value.labels),")",sep="")
-        #putVm("cmdimp",cmdimp)
-        #dname <- format(Sys.time(), "importedSTATA_%H_%M")
+				#set dataset active and close window
         setActiveDataset(df, loadScript=cmdimp)
         dispose(wd)
         dispose(importDialog)  
@@ -804,9 +756,8 @@ VIMGUI <- function(startupObject=NULL){
       })
       
     })
+		#more window layout 
     csvdiscard <- gbutton("Discard ", handler=function(...){dispose(importDialog)})
-    csvadjustTypes <- gbutton("Adjust Types", handler=typDialog)
-    
     ftop <- gframe("Choose STATA-File:")
     gtop <- ggroup(horizontal=TRUE, container=ftop)
     add(ftop, filename, expand=TRUE)
@@ -822,8 +773,10 @@ VIMGUI <- function(startupObject=NULL){
     buttonHandler()
   }
   
-  # Data - Import - Import SAS
+  #opens a small window for importing SAS files
+	#called after clicking the corresponding menu entry
   importSAS <- function(...){
+		#init window and variables
     importDialog <- gwindow("Import SAS", parent=window, width=100, height=100)
     putVm("importDialog",importDialog)
     putVm("dframe", NULL)
@@ -832,6 +785,8 @@ VIMGUI <- function(startupObject=NULL){
     filename <- gedit()
     enabled(filename) <- FALSE
     
+		#handler for file choose button
+		#opens file choose dialog
     buttonHandler <- function(...){
       gfile(text = "Open SAS Export File", 
             filter=list("SAS XPORT"=list(patterns=c("*.xpt", "*.XPT")),"All files" = list(patterns = c("*"))),
@@ -848,13 +803,12 @@ VIMGUI <- function(startupObject=NULL){
       tryCatch({
         wd <- WaitingDialog(Parent=importDialog)
         focus(wd) <- TRUE
+				#actual import
         df <- sasxport.get(svalue(filename))
         putVm("importFilename",svalue(filename))
         filename=gsub("\\\\","/",svalue(filename))
+				#build command line script for script window
         cmdimp <- paste("activedataset <- sasxport.get(\"",gsub("\\\\","/",filename),"\")",sep="")
-        #putVm("cmdimp",cmdimp)
-        
-        #dname <- format(Sys.time(), "importedSAS_%H_%M")
         setActiveDataset(df, loadScript=cmdimp)
         
       },error=function(e){
@@ -862,9 +816,8 @@ VIMGUI <- function(startupObject=NULL){
       })
       
     })
+		#more window layout
     csvdiscard <- gbutton("Discard ", handler=function(...){dispose(importDialog)})
-    csvadjustTypes <- gbutton("Adjust Types", handler=typDialog)
-    
     ftop <- gframe("Choose SAS-File:")
     gtop <- ggroup(horizontal=TRUE, container=ftop)
     add(ftop, filename, expand=TRUE)
@@ -876,8 +829,10 @@ VIMGUI <- function(startupObject=NULL){
     buttonHandler()
   }
   
-  # Data - Export - Export CSV
+  #opens a small window for exporting CSV files
+	#called after clicking the corresponding menu entry
   exportCSV <- function(...){
+		#init window and variables
     importDialog <- gwindow("Export CSV", parent=window, width=200, height=200)
     putVm("importDialog",importDialog)
     putVm("dframe", NULL)
@@ -886,6 +841,8 @@ VIMGUI <- function(startupObject=NULL){
     csvfilename <- gedit()
     enabled(csvfilename) <- FALSE
     
+		#handler for file chooser button
+		#opens file choose dialog
     buttonHandler <- function(...){
       gfile(text = "Save CSV File", type = "save", filter=list("CSV-Files"=list("*.csv")),handler=function(h,...){
         if(grepl("^.*\\.(csv|CSV)$", h$file)){
@@ -897,7 +854,9 @@ VIMGUI <- function(startupObject=NULL){
       })
     }
     
-    #setup csv import gui
+    #retrieves previously saved CSV import settings
+		#to allow simple export of similar CSV
+		#or use default settings
     if(existsVm("csvimportparameters")){
       ip <- getVm("csvimportparameters")
       ip$na.strings<-"NA"
@@ -916,30 +875,38 @@ VIMGUI <- function(startupObject=NULL){
                  na.strings="NA")
     }
     
+		#more layouting
     statusbar <- gstatusbar("")
     csvfilebutton <- gbutton("...", handler=buttonHandler)
     csvheader <- gcheckbox("header", checked=ip$header)
     csvseperator <- gedit(ip$sep)
     csvdecimal <- gedit(ip$dec)
     csvnastrings <- gedit(ip$na.strings)
+		#accept button handler
+		#saves CSV file
     csvaccept <- gbutton("Accept", handler=function(...){
       dataobject <- getVm("activeDataSetOriginal")
+			#if data was imputed, ask user which version to export
       if (is.null(getVm("activeDataSetImputed")) == FALSE){
         w <- gconfirm("Do you want to use the imputed values?", title="Imputed Values", icon="question")
         if (w == TRUE){
           dataobject <- getVm("activeDataSetImputed")
         }
       }
+			#is data object is survey, only save real dataset
       if (is.survey(dataobject)){
         dataobject <- dataobject$variables
       }
+			#remove delimiter variables
       dataobject <- dataobject[,grep("_imp", colnames(dataobject), invert=TRUE)]
+			#actual export
       tryCatch({write.table(dataobject, file=svalue(csvfilename),
                             sep=svalue(csvseperator),
                             na=svalue(csvnastrings),
                             dec=svalue(csvdecimal),
                             row.names=svalue(csvheader))
                 putVm("exportFileName", svalue(csvfilename))
+								#create command line script for script browser
                 cmdimp <- paste("write.table(activedataset, file='",gsub("\\\\","/",svalue(csvfilename)),"',",
                                 "sep='",svalue(csvseperator),"',",
                                 "na='",svalue(csvnastrings),"'',",
@@ -951,14 +918,8 @@ VIMGUI <- function(startupObject=NULL){
                                           icon="error")})
       dispose(importDialog)
     })
+		#more layouting
     csvdiscard <- gbutton("Discard ", handler=function(...){dispose(importDialog)})
-    
-    #record export
-    #frame.html <- gframe("HTML report")
-    #radio.html <- gradio(c("none", "Full report (for internal use)","Short report (for external use)"), 
-    #                     horizontal=TRUE, container=frame.html)
-    
-    
     ftop <- gframe("Choose CSV-File:")
     gtop <- ggroup(horizontal=TRUE, container=ftop)
     add(ftop, csvfilename, expand=TRUE)
@@ -974,12 +935,10 @@ VIMGUI <- function(startupObject=NULL){
     glayout[2,5, anchor=c(0,0)] <- glabel("NA-strings:")
     glayout[2,6, expand=FALSE] <- csvnastrings
     layout[2:5, 1:7] <- fparams
-    #layout[8, 1:7] <- frame.html
     layout[9,6, expand=FALSE] <- csvaccept
     layout[9,7, expand=FALSE] <- csvdiscard
     add(importDialogFrame, layout, expand=TRUE)
-    #add(importDialogFrame, statusbar)
-    
+		#init window
     buttonHandler()
   }
   
