@@ -253,8 +253,9 @@ VIMGUI <- function(startupObject=NULL){
 	#loadScript ...		R-source used to load variable, first line in script dialog
 	#parent			...		parent for the small dialog windows
 	#adjustTypes...		should adjusting of types be performed
+  #deleteScript     should the previous accumulated scripts be deleted
   setActiveDataset <- function(x, firstPage=TRUE, prepare=FALSE, loadScript="", parent=NULL,
-                               adjustTypes=TRUE){
+                               adjustTypes=TRUE, deleteScript=TRUE){
     if (firstPage){
       svalue(mainNotebook) <- 1
     }
@@ -271,7 +272,9 @@ VIMGUI <- function(startupObject=NULL){
     }
     
     #delete script history
-    putVm("ScriptHistory", list(loadScript, "originaldataset <- activedataset"))
+    if (deleteScript== TRUE){
+      putVm("ScriptHistory", list(loadScript, "originaldataset <- activedataset"))
+    }
     
     initPanels()
     updatePanels(firstTime=TRUE)
@@ -1644,21 +1647,46 @@ VIMGUI <- function(startupObject=NULL){
         mixed.constant <- v
       }
       
+#       #imputation and saving of screen output for summary
+#       sumText <- capture.output(t <- try(impData <- kNN(dataset,
+#                                                variable = variable,
+#                                                k = k,
+#                                                dist_var = dist_var,
+#                                                weights = weights,
+#                                                numFun = get(svalue(imputation.kNN.numFun)),
+#                                                catFun = get(svalue(imputation.kNN.catFun)),
+#                                                #makeNA = makeNA,
+#                                                impNA = svalue(imputation.kNN.impNA),
+#                                                addRandom = svalue(imputation.kNN.addRandom),
+#                                                mixed = mixed,
+#                                                mixed.constant = mixed.constant)))
+      
       #imputation and saving of screen output for summary
-      sumText <- capture.output(t <- try(impData <- kNN(dataset,
-                                               variable = variable,
-                                               k = k,
-                                               dist_var = dist_var,
-                                               weights = weights,
-                                               numFun = get(svalue(imputation.kNN.numFun)),
-                                               catFun = get(svalue(imputation.kNN.catFun)),
-                                               #makeNA = makeNA,
-                                               impNA = svalue(imputation.kNN.impNA),
-                                               addRandom = svalue(imputation.kNN.addRandom),
-                                               mixed = mixed,
-                                               mixed.constant = mixed.constant)))
+      sumText <- capture.output(impData <- tryCatch({kNN(dataset,
+                                                        variable = variable,
+                                                        k = k,
+                                                        dist_var = dist_var,
+                                                        weights = weights,
+                                                        numFun = get(svalue(imputation.kNN.numFun)),
+                                                        catFun = get(svalue(imputation.kNN.catFun)),
+                                                        #makeNA = makeNA,
+                                                        impNA = svalue(imputation.kNN.impNA),
+                                                        addRandom = svalue(imputation.kNN.addRandom),
+                                                        mixed = mixed,
+                                                        mixed.constant = mixed.constant)},
+                                                    error=function(e){
+                                                      message(e$message)
+                                                      gmessage(paste("A problem occured (see also in console):",e$message), title="Warning", icon="error")
+                                                      return(NULL)
+                                                    },
+                                                    warning=function(e){
+                                                      message(e$message)
+                                                      gmessage(paste("A problem occured (see also in console):",e$message), title="Warning", icon="error")
+                                                      return(NULL)
+                                                    }))
+      
       #no error while imputation
-      if(!is(t,"try-error")) {
+      if(!is.null(impData)) {
         putVm("activeDataSetImputed", impData)  
         if (is.null(impData) == FALSE){
           enabled(impVis.plotImputed) <- TRUE 
@@ -1729,11 +1757,6 @@ VIMGUI <- function(startupObject=NULL){
           gmessage("Imputation successful!", title="Success", icon="info")
         }
       }
-      else{
-        #svalue(imputation.summary) <- paste(Sys.time(),"\n")
-        #insert(imputation.summary, "A problem occured, more detailed information in the R console.")
-        gmessage("A problem occured, more detailed information in the R console!", title="Warning", icon="error")
-      }
     }
     #perform irmi imputation
     if (svalue(imputation.notebook)==2){
@@ -1762,16 +1785,26 @@ VIMGUI <- function(startupObject=NULL){
         count <- v
       }
       
-      sumText <- capture.output(t <- try(impData <- irmi(dataset,
+      sumText <- capture.output(impData <- tryCatch({irmi(dataset,
                                                 #variable = variable,
                                                 mixed = mixed,
                                                 mixed.constant = mixed.constant,
                                                 count = count,
                                                 robust = svalue(imputation.irmi.robust),
                                                 noise = svalue(imputation.irmi.noise),
-                                                noise.factor = svalue(imputation.irmi.noise.factor))))
+                                                noise.factor = svalue(imputation.irmi.noise.factor))},
+                                               error=function(e){
+                                                 message(e$message)
+                                                 gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                                 return(NULL)
+                                               },
+                                               warning=function(e){
+                                                 message(e$message)
+                                                 gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                                 return(NULL)
+                                               }))
       #no error while imputation
-      if(!is(t,"try-error")) {
+      if(!is.null(impData) ) {
         putVm("activeDataSetImputed", impData)  
         if (is.null(impData) == FALSE){
           enabled(impVis.plotImputed) <- TRUE 
@@ -1820,11 +1853,6 @@ VIMGUI <- function(startupObject=NULL){
           gmessage("Imputation successful!", title="Success", icon="info")
         }
       }
-      else{
-        gmessage("A problem occured, more detailed information in the R console!", title="Warning", icon="error")
-        #svalue(imputation.summary) <- paste(Sys.time(),"\n")
-        #insert(imputation.summary, "A problem occured, more detailed information in the R console.")
-      }
     }
     #perform hotdeck imputation
     if (svalue(imputation.notebook)==3){
@@ -1853,14 +1881,24 @@ VIMGUI <- function(startupObject=NULL){
 #         makeNA <- v
 #       }
       
-      sumText <- capture.output(t <- try(impData <- hotdeck(dataset,
+      sumText <- capture.output(impData <- tryCatch({hotdeck(dataset,
                                                    variable = variable,
                                                    ord_var = ord_var,
                                                    domain_var = domain_var,
                                                    #makeNA = makeNA,
-                                                   impNA = svalue(imputation.hotdeck.impNA))))
+                                                   impNA = svalue(imputation.hotdeck.impNA))},
+                                                    error=function(e){
+                                                      message(e$message)
+                                                      gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                                      return(NULL)
+                                                    },
+                                                    warning=function(e){
+                                                      message(e$message)
+                                                      gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                                      return(NULL)
+                                                    }))
       #no error while imputation
-      if(!is(t,"try-error")) {
+      if(!is.null(impData)) {
         putVm("activeDataSetImputed", impData)  
         if (is.null(impData) == FALSE){
           if (is.survey(impData)){
@@ -1906,11 +1944,6 @@ VIMGUI <- function(startupObject=NULL){
           gmessage("Imputation successful!", title="Success", icon="info")
           
         }
-      }
-      else{
-        gmessage("A problem occured, more detailed information in the R console!", title="Warning", icon="error")
-        #svalue(imputation.summary) <- paste(Sys.time(),"\n")
-        #insert(imputation.summary, "A problem occured, more detailed information in the R console.")
       }
     }
     
@@ -2216,12 +2249,19 @@ VIMGUI <- function(startupObject=NULL){
       if (is.Empty(svalue(survey.weights)) == FALSE){
         weights <- as.formula(paste("~", svalue(survey.weights)))
       }
-      t <- try(surveyObject <- svydesign(ids=ids, probs = probs, strata = strata, variables = variables,
-                                         fps = fpc, weights = weights, data = dataobject))
-      if("try-error" %in% class(t)){
-        #do something about error
-      }
-      else{
+      surveyObject <- tryCatch({svydesign(ids=ids, probs = probs, strata = strata, variables = variables,
+                                         fps = fpc, weights = weights, data = dataobject)},
+                               error=function(e){
+                                 message(e$message)
+                                 gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                 return(NULL)
+                               },
+                               warning=function(e){
+                                 message(e$message)
+                                 gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                 return(NULL)
+                               })
+      if(!is.null(surveyObject)){
         #survey could be created
         #putVm("activeDataSetOriginal", surveyObject)
         #str(getVm("activeDataSetOriginal"))
@@ -2381,13 +2421,21 @@ VIMGUI <- function(startupObject=NULL){
           alrVar <- svalue(prepare.alrVar) 
         }
         #try to prepare dataset
-        t <- try({preparedDataset <- prepare(currentDataset, scaling=svalue(prepare.scaling),
-                                   transformation = svalue(prepare.transformation),
-                                   alpha=alpha, powers=powers, start=start, alrVar=alrVar)})
+        preparedDataset <- tryCatch({prepare(currentDataset, scaling=svalue(prepare.scaling),
+                                    transformation = svalue(prepare.transformation),
+                                    alpha=alpha, powers=powers, start=start, alrVar=alrVar)},
+                                    error=function(e){
+                                      message(e$message)
+                                      gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                      return(NULL)
+                                    },
+                                    warning=function(e){
+                                      message(e$message)
+                                      gmessage(paste("A problem occured (see also in console):",e$message), title="Problem", icon="error")
+                                      return(NULL)
+                                    })
         #there was a problem
-        if(is(t,"try-error")) {
-          gmessage(t, "Problem", icon="error")
-        }else{
+        if(!is.null(preparedDataset)) {
           putVm("undoDataSetOriginal", currentDataset)
           if (is.null(alpha)) alpha <- "NULL"
           if (is.null(powers)) powers <- "NULL"
@@ -2398,7 +2446,7 @@ VIMGUI <- function(startupObject=NULL){
           else{
             alrVar <- paste('"',alrVar,'"', sep="")
           }
-          cmdimp <- paste("activedataset <- prepare(activedataset, ",
+          cmdimp <- paste("undoDataset <- activedataset \n","activedataset <- prepare(activedataset, ",
                           'scaling="',svalue(prepare.scaling),'", ',
                           'transformation="',svalue(prepare.transformation),'", ',
                           'alpha=',alpha,', ',
@@ -2422,7 +2470,8 @@ VIMGUI <- function(startupObject=NULL){
     w <- gconfirm("Undoing the previous prepare action removes all subsequent changes, proceed?", title="Undo prepare", icon="question")
     if (w == TRUE){
       undoDataset <- getVm("undoDataSetOriginal")
-      setActiveDataset(undoDataset)
+      setActiveDataset(undoDataset, adjustTypes=FALSE, deleteScript=FALSE)
+      addScriptLine("activedataset <- undoDataset")
     }
     
   }
