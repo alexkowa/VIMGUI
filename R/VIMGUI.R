@@ -49,7 +49,9 @@ VIMGUI <- function(startupObject=NULL){
                         prop = svalue(impVis.aggr.prop), combined = svalue(impVis.aggr.combined),
                         only.miss = svalue(impVis.aggr.only.miss), sortVars = svalue(impVis.aggr.sortVars),
                         sortCombs = svalue(impVis.aggr.sortCombs),
-                        col = getVm("plotColors"), delimiter=delimiter), savePlot=savePlot)
+                        col = getVm("plotColors"), delimiter=delimiter
+                        #,weighted=svalue(impVis.aggr.weighted)
+                        ), savePlot=savePlot)
     }
     else if (index == 2){
 			#use the buffered plot function to create a barMiss-plot
@@ -57,7 +59,9 @@ VIMGUI <- function(startupObject=NULL){
               selection = svalue(impVis.barMiss.selection),
               only.miss = svalue(impVis.barMiss.only.miss),
               col = getVm("plotColors"),interactive=FALSE,
-                           delimiter=delimiter), savePlot=savePlot)
+                           delimiter=delimiter
+                           #,weighted=svalue(impVis.barMiss.weighted)
+                           ), savePlot=savePlot)
     }
     else if (index == 3){
 			#use the buffered plot function to create a histMiss-plot
@@ -71,7 +75,9 @@ VIMGUI <- function(startupObject=NULL){
                breaks = breaks, right = svalue(impVis.histMiss.right),
                only.miss = svalue(impVis.histMiss.only.miss),
                col = getVm("plotColors"),interactive=FALSE,
-                            delimiter=delimiter), savePlot=savePlot)
+                            delimiter=delimiter
+                            #,weighted=svalue(impVis.histMiss.weighted)
+                            ), savePlot=savePlot)
     }
     else if (index == 4){
 			#use the buffered plot function to create a marginmatrix-plot
@@ -100,7 +106,9 @@ VIMGUI <- function(startupObject=NULL){
 																	col = getVm("plotColors"), alpha = getVm("plotAlpha"),interactive=FALSE,
                                   delimiter=delimiter, plotvars=plotvars, highlight=highlight,
                                   selection=svalue(impVis.scattmatrixMiss.selection),
-                                  diagonal=svalue(impVis.scattmatrixMiss.diagonal)), savePlot=savePlot)
+                                  diagonal=svalue(impVis.scattmatrixMiss.diagonal)
+                                  #,weighted=svalue(impVis.scattmatrixMiss.weighted)
+                                   ), savePlot=savePlot)
     }
     else if (index == 6){
 			#use the buffered plot function to create a mosaicMiss-plot
@@ -116,7 +124,9 @@ VIMGUI <- function(startupObject=NULL){
       bufferedPlot(mosaicMiss(plotData, highlight=highlight, plotvars=plotvars, 
 									selection=svalue(impVis.mosaicMiss.selection),
 									col = getVm("plotColors"),
-									delimiter=delimiter), savePlot=savePlot)
+									delimiter=delimiter
+                  #,weighted=svalue(impVis.mosaicMiss.weighted)
+                  ), savePlot=savePlot)
     }
     else if (index == 7){
 			#use the buffered plot function to create a parcoordMiss-plot
@@ -133,7 +143,9 @@ VIMGUI <- function(startupObject=NULL){
                    selection=svalue(impVis.parcoordMiss.selection),
                    plotNA = svalue(impVis.parcoordMiss.plotNA),
                    col = getVm("plotColors"), alpha = getVm("plotAlpha"),interactive=FALSE,
-                                delimiter=delimiter), savePlot=savePlot)
+                   delimiter=delimiter
+                                #,weighted=svalue(impVis.parcoordMiss.weighted)
+                                ), savePlot=savePlot)
     }
     else if (index == 8){
 			#use the buffered plot function to create a pbox-plot
@@ -141,14 +153,18 @@ VIMGUI <- function(startupObject=NULL){
            selection = svalue(impVis.pbox.selection),
            numbers = svalue(impVis.pbox.numbers),
            col = getVm("plotColors"),interactive=FALSE,
-                        delimiter=delimiter), savePlot=savePlot)
+                        delimiter=delimiter
+                        #,weighted=svalue(impVis.pbox.weighted)
+                        ), savePlot=savePlot)
     }
     else if (index == 9){
       #use the buffered plot function to create a matrixplot-plot
       suppressWarnings({
         bufferedPlot(matrixplot(plotData, sortby=svalue(impVis.matrixplot.sortby, index=TRUE),
                                 col = getVm("plotColors"),interactive=FALSE,
-                                delimiter=delimiter), savePlot=savePlot)
+                                delimiter=delimiter
+                                #,weighted=svalue(impVis.matrixplot.weighted)
+                                ), savePlot=savePlot)
       })
     }
   }
@@ -1906,8 +1922,57 @@ VIMGUI <- function(startupObject=NULL){
     
     #perform regression imputation
     if (svalue(imputation.notebook)==4){
-      #DO REGRESSION IMPUTATION
-      #FOR FUTURE DEVELOPMENT
+      #convert widgets to useable function parameters, i.e. convert from character to numeric,
+      #substitute NULL for empty elements,...
+      formula <- paste(svalue(imputation.regression.dependent),
+                                  "~",
+                                  svalue(imputation.regression.independent))
+      
+      #perform actual imputation
+      #capture different errors and warnings
+      sumText <- capture.output(impData <- tryCatch({regressionImp(as.formula(formula),
+                                                                   svalue(imputation.regression.family),
+                                                                   svalue(imputation.regression.robust),
+                                                                   dataset)},
+                                                    error=function(e){
+                                                      message(e$message)
+                                                      gmessage(paste("A problem occurred (see also in console):",e$message), title="Problem", icon="error")
+                                                      return(NULL)
+                                                    },
+                                                    warning=function(e){
+                                                      message(e$message)
+                                                      gmessage(paste("A problem occurred (see also in console):",e$message), title="Problem", icon="error")
+                                                      return(NULL)
+                                                    }))
+      #no error while imputation
+      if(!is.null(impData) ) {
+        #save imputed data
+        putVm("activeDataSetImputed", impData)  
+        enabled(impVis.plotImputed) <- TRUE 
+        vars <- getVm("ImputedVariables")
+        
+        #find actual imputed variables and save them for undo operation
+        if (is.survey(impData)){
+          variable <- compareImputations(dataset$variables, impData$variables)
+        }
+        else{
+          variable <- compareImputations(dataset, impData)
+        }
+        vars[variable,1] <- TRUE
+        vars[variable,2] <- "regression"
+        vars[variable,3] <- format(Sys.time(), "%H:%M:%S")
+        putVm("ImputedVariables", vars)
+        updateUndoVariablesTable()
+        sumtable <- createSummaryDataframe(impData)
+        insertTable(imputation.summarytable, sumtable)
+        #build command line string
+        #convert the content of widgets to a actual string representation
+        cmd <- paste('activedataset <- regressionImp(',as.character(formula), ', family="',svalue(imputation.regression.family),'",',
+                     'robust=',svalue(imputation.regression.robust),", ",
+                     'data=activedataset)"',collapse="")
+        addScriptLine(cmd)
+        gmessage("Imputation successful!", title="Success", icon="info") 
+      }
     }
   }
   
