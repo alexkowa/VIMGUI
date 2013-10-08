@@ -1,3 +1,5 @@
 #0.9.0
  -- new pacakge VIMGUI contains all GUI functions
+ -- completly new GUI (old TCLTK GUI still inclduded
  -- vignettes are in this package
+ -- roxygen style comments -> help files

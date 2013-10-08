@@ -3,6 +3,18 @@
 #         Vienna University of Technology
 # ---------------------------------------
 
+
+
+#' GUI for Visualization and Imputation of Missing Values
+#' 
+#' Graphical user interface for visualization and imputation of missing values.
+#' 
+#' Details about handling survey objects follow soon.
+#' 
+#' @param startupObject Object loaded at the start of the GUI
+#' @author Daniel Schopfhauser
+#' @keywords multivariate hplot
+#' @export VIMGUI
 VIMGUI <- function(startupObject=NULL){
   #fixate underlying GUI-Toolkit for gWidgets to GTK
   #as there are some specific used features

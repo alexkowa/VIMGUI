@@ -1,21 +1,23 @@
 \name{VIMGUI}
 \alias{VIMGUI}
 \title{GUI for Visualization and Imputation of Missing Values}
-\description{
-    Graphical user interface for visualization and imputation of 
-    missing values.
-}
 \usage{
-VIMGUI(startupObject=NULL)
+  VIMGUI(startupObject = NULL)
 }
-
 \arguments{
-    \item{startupObject}{Object loaded at the start of the GUI}
+  \item{startupObject}{Object loaded at the start of the
+  GUI}
+}
+\description{
+  Graphical user interface for visualization and imputation
+  of missing values.
 }
 \details{
-  Details about handling survey objects follow soon.    
+  Details about handling survey objects follow soon.
 }
-\author{Daniel Schopfhauser}
-\keyword{multivariate}
+\author{
+  Daniel Schopfhauser
+}
 \keyword{hplot}
+\keyword{multivariate}
 

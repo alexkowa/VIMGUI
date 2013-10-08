@@ -1,32 +1,31 @@
-import(foreign, Hmisc, Cairo, RGtk2, VIM, survey,tkrplot,gWidgetsRGtk2)
-export(
-    TKRaggr,
-    TKRmarginmatrix,
-    TKRmatrixplot,
-    TKRparcoordMiss,
-    TKRpbox,
-    TKRscattmatrixMiss,
-    vmGUImenu,VIMGUI    
-)
-
-
-S3method(TKRmarginmatrix, data.frame)
-S3method(TKRmarginmatrix, survey.design)
-S3method(TKRmarginmatrix, default)
-
-S3method(TKRmatrixplot, data.frame)
-S3method(TKRmatrixplot, survey.design)
-S3method(TKRmatrixplot, default)
-
-S3method(TKRparcoordMiss, data.frame)
-S3method(TKRparcoordMiss, survey.design)
-S3method(TKRparcoordMiss, default)
-
-S3method(TKRpbox, data.frame)
-S3method(TKRpbox, survey.design)
-S3method(TKRpbox, default)
-
-S3method(TKRscattmatrixMiss, data.frame)
-S3method(TKRscattmatrixMiss, survey.design)
-S3method(TKRscattmatrixMiss, default)
-
+export(TKRaggr)
+export(TKRmarginmatrix)
+export(TKRmatrixplot)
+export(TKRparcoordMiss)
+export(TKRpbox)
+export(TKRscattmatrixMiss)
+export(VIMGUI)
+export(vmGUImenu)
+import(Cairo)
+import(foreign)
+import(gWidgetsRGtk2)
+import(Hmisc)
+import(RGtk2)
+import(survey)
+import(tkrplot)
+import(VIM)
+S3method(TKRmarginmatrix,data.frame)
+S3method(TKRmarginmatrix,default)
+S3method(TKRmarginmatrix,survey.design)
+S3method(TKRmatrixplot,data.frame)
+S3method(TKRmatrixplot,default)
+S3method(TKRmatrixplot,survey.design)
+S3method(TKRparcoordMiss,data.frame)
+S3method(TKRparcoordMiss,default)
+S3method(TKRparcoordMiss,survey.design)
+S3method(TKRpbox,data.frame)
+S3method(TKRpbox,default)
+S3method(TKRpbox,survey.design)
+S3method(TKRscattmatrixMiss,data.frame)
+S3method(TKRscattmatrixMiss,default)
+S3method(TKRscattmatrixMiss,survey.design)

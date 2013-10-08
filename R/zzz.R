@@ -1,3 +1,4 @@
+#' @import foreign Hmisc Cairo RGtk2 VIM survey tkrplot gWidgetsRGtk2
 .onAttach <- function(libname, pkgname) {
 #    library.dynam("VIM", pkgname, libname)
     # load data
