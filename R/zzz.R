@@ -1,4 +1,6 @@
-#' @import foreign Hmisc Cairo RGtk2 VIM survey tkrplot gWidgetsRGtk2
+#' @import foreign Cairo RGtk2 VIM survey tkrplot gWidgetsRGtk2
+#' @importFrom Hmisc spss.get
+#' @importFrom Hmisc sasxport.get
 .onAttach <- function(libname, pkgname) {
 #    library.dynam("VIM", pkgname, libname)
     # load data

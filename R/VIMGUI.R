@@ -1943,9 +1943,9 @@ VIMGUI <- function(startupObject=NULL){
       #perform actual imputation
       #capture different errors and warnings
       sumText <- capture.output(impData <- tryCatch({regressionImp(as.formula(formula),
-                                                                   svalue(imputation.regression.family),
-                                                                   svalue(imputation.regression.robust),
-                                                                   dataset)},
+                                                                   family=svalue(imputation.regression.family),
+                                                                   robust=svalue(imputation.regression.robust),
+                                                                   data=dataset)},
                                                     error=function(e){
                                                       message(e$message)
                                                       gmessage(paste("A problem occurred (see also in console):",e$message), title="Problem", icon="error")
