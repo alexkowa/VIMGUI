@@ -1,4 +1,9 @@
+#' @importFrom grDevices colors dev.new dev.off
+#' @importFrom graphics par plot
+#' @importFrom stats aggregate as.formula coef fivenum sd window t.test
+#' @importFrom utils capture.output head read.table write.table
 #' @import foreign Cairo RGtk2 VIM survey tkrplot gWidgetsRGtk2
+#' @import tcltk gWidgets
 #' @importFrom Hmisc spss.get
 #' @importFrom Hmisc sasxport.get
 .onAttach <- function(libname, pkgname) {

@@ -64,6 +64,9 @@
 #' @references M. Templ, A. Alfons, P. Filzmoser (2012) Exploring incomplete
 #' data using visualization tools.  \emph{Journal of Advances in Data Analysis
 #' and Classification}, Online first. DOI: 10.1007/s11634-011-0102-y.
+#' @references A. Kowarik, M. Templ (2016) Imputation with
+#' R package VIM.  \emph{Journal of
+#' Statistical Software}, 74(7), 1-16
 #' @keywords hplot
 #' @examples
 #' 
